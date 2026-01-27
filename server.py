@@ -1,50 +1,75 @@
-from flask import Flask, request, jsonify, redirect, session, render_template_string
-import json, os, uuid, time
+from flask import Flask, request, jsonify, redirect, session, render_template_string, send_file
+import json, os, uuid, time, hashlib, csv
 from functools import wraps
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret"
+app.secret_key = "SUPER-SECRET-KEY-CHANGE-THIS"
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "123456"
+# ================= Files =================
 DB_FILE = "keys.json"
+USERS_FILE = "users.json"
+LOG_FILE = "logs.txt"
 
-# ----------------- Database -----------------
-def load_db():
-    if not os.path.exists(DB_FILE):
-        return {}
-    with open(DB_FILE, "r") as f:
+# ================= Helpers =================
+def log_event(text):
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"[{datetime.now()}] {text}\n")
+
+def load_json(file, default):
+    if not os.path.exists(file):
+        return default
+    with open(file, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_db(data):
-    with open(DB_FILE, "w") as f:
+def save_json(file, data):
+    with open(file, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
-# ----------------- Auth -----------------
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
+
+# ================= Default Users =================
+if not os.path.exists(USERS_FILE):
+    save_json(USERS_FILE, {
+        "admin": {
+            "password": hash_password("123456"),
+            "role": "admin",
+            "token": str(uuid.uuid4())
+        }
+    })
+
+# ================= Auth Decorators =================
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if not session.get("logged_in"):
+        if not session.get("user"):
             return redirect("/login")
         return f(*args, **kwargs)
     return wrapper
 
-# ----------------- Layout -----------------
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user = session.get("user")
+        users = load_json(USERS_FILE, {})
+        if not user or users[user]["role"] != "admin":
+            return "Forbidden", 403
+        return f(*args, **kwargs)
+    return wrapper
+
+# ================= Layout =================
 BASE_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-<title>Rematch Egypt Panel</title>
+<title>Rematch Egypt Admin</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
 <style>
 body {
     background: linear-gradient(135deg, #020617, #0b1220);
     color: #e2e8f0;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: Segoe UI;
 }
 .navbar {
     background: #020617;
@@ -52,209 +77,152 @@ body {
 }
 .card {
     background: #0f172a;
-    border: 1px solid #1f2937;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    border: 1px solid #1f2937;
 }
-.table { color: #e2e8f0; }
-.btn-primary { background: #2563eb; border: none; }
-.btn-success { background: #16a34a; border: none; }
 </style>
 </head>
 <body>
-
-<nav class="navbar navbar-dark px-4 py-3">
-  <span class="navbar-brand fw-bold">🎮 Rematch Egypt Admin</span>
-  <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
+<nav class="navbar px-4 py-3">
+  <span class="navbar-brand">🎮 Rematch Egypt Panel</span>
+  <a href="/logout" class="btn btn-outline-light">Logout</a>
 </nav>
-
 <div class="container py-4">
-  {{ content|safe }}
+{{ content|safe }}
 </div>
-
 </body>
 </html>
 """
 
-# ----------------- Login -----------------
+# ================= Login =================
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    ip = request.remote_addr
+    users = load_json(USERS_FILE, {})
+
     if request.method == "POST":
-        if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
-            session["logged_in"] = True
+        u = request.form.get("username")
+        p = request.form.get("password")
+
+        if u in users and users[u]["password"] == hash_password(p):
+            session["user"] = u
+            log_event(f"LOGIN SUCCESS {u} IP:{ip}")
             return redirect("/dashboard")
-        return "Invalid login"
+        else:
+            log_event(f"LOGIN FAIL {u} IP:{ip}")
+            return "Invalid login"
 
     return f"""
-    <style>
-    body {{
-        background: 
-            linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.75)),
-            url('/static/img/login_bg.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        height:100vh;
-        color:white;
-        font-family:Segoe UI;
-    }}
-    .box {{
-        background: rgba(2,6,23,.92);
-        padding:40px;
-        border-radius:20px;
-        width:360px;
-        border:1px solid #1f2937;
-        box-shadow:0 0 50px rgba(0,0,0,.9);
-        backdrop-filter: blur(6px);
-    }}
-    input,button {{
-        width:100%;
-        padding:14px;
-        margin:10px 0;
-        border-radius:12px;
-        border:none;
-        outline:none;
-    }}
-    input {{
-        background:#020617;
-        color:white;
-        border:1px solid #1f2937;
-    }}
-    button {{
-        background:linear-gradient(135deg,#2563eb,#38bdf8);
-        color:white;
-        font-weight:bold;
-        letter-spacing:1px;
-        transition:.3s;
-    }}
-    button:hover {{
-        transform: translateY(-2px);
-        box-shadow:0 0 20px #2563eb88;
-    }}
-    </style>
+<style>
+body {{
+background: url('/static/img/login_bg.jpg') center/cover no-repeat;
+height:100vh; display:flex; justify-content:center; align-items:center;
+}}
+.box {{
+background: rgba(2,6,23,.85);
+padding:40px;
+border-radius:20px;
+width:360px;
+animation: fadeIn .8s ease;
+box-shadow:0 0 40px black;
+}}
+@keyframes fadeIn {{
+from {{opacity:0; transform:translateY(30px)}}
+to {{opacity:1; transform:translateY(0)}}
+}}
+input,button {{
+width:100%; padding:12px; margin:8px 0;
+border-radius:10px; border:none;
+}}
+button {{ background:#2563eb; color:white; font-weight:bold; }}
+</style>
 
-    <form method="post" class="box">
-      <h3 style="text-align:center;margin-bottom:25px;">🎮 Rematch Egypt Admin</h3>
-      <input name="username" placeholder="Username">
-      <input name="password" type="password" placeholder="Password">
-      <button>Login</button>
-    </form>
-    """
+<form method="post" class="box">
+  <div style="text-align:center;">
+    <img src="/static/img/logo.png" width="90"><br><br>
+    <h4>Rematch Egypt Admin</h4>
+  </div>
+  <input name="username" placeholder="Username">
+  <input name="password" type="password" placeholder="Password">
+  <button>Login</button>
+</form>
+"""
 
-# ----------------- Dashboard -----------------
+# ================= Dashboard =================
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    data = load_db()
-    now = int(time.time())
-    total = len(data)
-    active = expired = used = 0
-
-    for v in data.values():
-        lifetime = v["expires_in"] * 86400
-        if now - v["created_at"] > lifetime:
-            expired += 1
-        else:
-            active += 1
-        if v["hwid"]:
-            used += 1
-
+    keys = load_json(DB_FILE, {})
     content = f"""
     <div class="row g-4">
-      <div class="col-md-3"><div class="card p-4 text-center"><h6>Total Keys</h6><h2>{total}</h2></div></div>
-      <div class="col-md-3"><div class="card p-4 text-center"><h6>Active</h6><h2>{active}</h2></div></div>
-      <div class="col-md-3"><div class="card p-4 text-center"><h6>Expired</h6><h2>{expired}</h2></div></div>
-      <div class="col-md-3"><div class="card p-4 text-center"><h6>Used</h6><h2>{used}</h2></div></div>
-    </div>
-    <div class="mt-4">
-      <a href="/keys" class="btn btn-primary">Manage Keys</a>
+      <div class="col-md-4"><div class="card p-4 text-center">Total Keys<br><h2>{len(keys)}</h2></div></div>
+      <div class="col-md-4"><div class="card p-4 text-center"><a href='/keys' class='btn btn-primary'>Manage Keys</a></div></div>
+      <div class="col-md-4"><div class="card p-4 text-center"><a href='/export' class='btn btn-success'>Export CSV</a></div></div>
     </div>
     """
     return render_template_string(BASE_HTML, content=content)
 
-# ----------------- Keys Page -----------------
+# ================= Keys =================
 @app.route("/keys")
 @login_required
-def keys_page():
-    data = load_db()
-    now = int(time.time())
+def keys():
+    data = load_json(DB_FILE, {})
     rows = ""
-
-    for k, v in data.items():
-        lifetime = v["expires_in"] * 86400
-        status = "Expired" if now - v["created_at"] > lifetime else "Active"
-        rows += f"<tr><td>{k}</td><td>{v['hwid'] or '-'}</td><td>{v['expires_in']} days</td><td>{status}</td></tr>"
-
+    for k,v in data.items():
+        rows += f"<tr><td>{k}</td><td>{v['hwid']}</td><td>{v['expires_in']}</td></tr>"
     content = f"""
-    <h3 class="mb-3">Keys Manager</h3>
-
-    <form method="post" action="/gen" class="mb-4">
-      <select name="days" class="form-select w-25 d-inline">
-        <option value="7">7 Days</option>
-        <option value="30" selected>30 Days</option>
-        <option value="90">90 Days</option>
-        <option value="9999">Lifetime</option>
-      </select>
-      <button class="btn btn-success ms-2">Generate</button>
+    <h3>Keys</h3>
+    <form method="post" action="/gen">
+      <button class="btn btn-success">Generate Key</button>
     </form>
-
-    <table id="keysTable" class="display">
-      <thead>
-        <tr><th>Key</th><th>HWID</th><th>Duration</th><th>Status</th></tr>
-      </thead>
-      <tbody>{rows}</tbody>
+    <table class="table table-dark mt-3">
+      <tr><th>Key</th><th>HWID</th><th>Days</th></tr>
+      {rows}
     </table>
-
-    <script>
-      $(document).ready(function() {{
-        $('#keysTable').DataTable();
-      }});
-    </script>
     """
     return render_template_string(BASE_HTML, content=content)
 
-# ----------------- Generate -----------------
+# ================= Generate =================
 @app.route("/gen", methods=["POST"])
 @login_required
-def generate():
-    days = int(request.form.get("days", 30))
-    data = load_db()
+def gen():
+    data = load_json(DB_FILE, {})
     key = str(uuid.uuid4())[:8].upper()
-    data[key] = {"hwid": None, "created_at": int(time.time()), "expires_in": days}
-    save_db(data)
+    data[key] = {"hwid":None,"created_at":int(time.time()),"expires_in":30}
+    save_json(DB_FILE, data)
     return redirect("/keys")
 
-# ----------------- API -----------------
+# ================= Export =================
+@app.route("/export")
+@admin_required
+def export():
+    data = load_json(DB_FILE,{})
+    with open("export.csv","w",newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Key","HWID","Days"])
+        for k,v in data.items():
+            w.writerow([k,v["hwid"],v["expires_in"]])
+    return send_file("export.csv", as_attachment=True)
+
+# ================= API Check =================
 @app.route("/check", methods=["POST"])
 def check():
     req = request.json
-    key, hwid = req.get("key"), req.get("hwid")
-    data = load_db()
-
+    data = load_json(DB_FILE,{})
+    key = req.get("key")
+    hwid = req.get("hwid")
     if key not in data:
-        return jsonify({"status": "invalid"})
+        return jsonify({"status":"invalid"})
+    rec = data[key]
+    if rec["hwid"] is None:
+        rec["hwid"]=hwid
+        save_json(DB_FILE,data)
+        return jsonify({"status":"bound"})
+    if rec["hwid"]==hwid:
+        return jsonify({"status":"ok"})
+    return jsonify({"status":"blocked"})
 
-    record = data[key]
-    now = int(time.time())
-    lifetime = record["expires_in"] * 86400
-
-    if now - record["created_at"] > lifetime:
-        return jsonify({"status": "expired"})
-
-    if record["hwid"] is None:
-        record["hwid"] = hwid
-        save_db(data)
-        return jsonify({"status": "bound"})
-
-    if record["hwid"] == hwid:
-        return jsonify({"status": "ok"})
-
-    return jsonify({"status": "blocked"})
-
-# ----------------- Logout -----------------
+# ================= Logout =================
 @app.route("/logout")
 def logout():
     session.clear()
