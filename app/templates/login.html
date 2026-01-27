@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rematch Egypt Control Panel</title>
+<style>
+body {
+    background: url("/static/img/login_bg.jpg") center/cover no-repeat;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Segoe UI;
+}
+.box {
+    background: rgba(0,0,0,.8);
+    padding:40px;
+    border-radius:20px;
+    width:360px;
+    color:white;
+    text-align:center;
+    animation: fade .6s ease;
+}
+@keyframes fade {
+    from {opacity:0; transform:translateY(30px)}
+    to {opacity:1; transform:translateY(0)}
+}
+input,button {
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:10px;
+    border:none;
+}
+button {
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<form class="box" method="post">
+    <img src="/static/img/logo.png" width="90"><br><br>
+    <h2>Rematch Egypt Control Panel</h2>
+
+    <input name="username" placeholder="Username">
+    <input name="password" type="password" placeholder="Password">
+    <button>Login</button>
+</form>
+
+</body>
+</html>
