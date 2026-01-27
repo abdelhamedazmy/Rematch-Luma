@@ -130,8 +130,7 @@ def api_check():
     # جهاز مختلف
     add_log("API", f"Blocked key: {key} (HWID mismatch)", get_ip())
     return jsonify({"status": "blocked"})
-    # ================= Users Management =================
-
+# ================= Users Management =================
 @main_bp.route("/users")
 def users_page():
     if not login_required():
@@ -144,5 +143,63 @@ def users_page():
     users = db.execute("SELECT * FROM users").fetchall()
 
     return render_template("users.html", users=users)
+
+
+@main_bp.route("/users/create", methods=["POST"])
+def create_user():
+    if not login_required() or not admin_required():
+        return "Forbidden", 403
+
+    username = request.form.get("username")
+    password = request.form.get("password")
+    role = request.form.get("role")
+
+    if not username or not password or not role:
+        return redirect("/users")
+
+    db = get_db()
+    try:
+        db.execute(
+            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+            (username, password, role)
+        )
+        db.commit()
+    except:
+        pass  # لو اليوزر موجود بالفعل
+
+    return redirect("/users")
+
+
+@main_bp.route("/users/delete/<int:user_id>")
+def delete_user(user_id):
+    if not login_required() or not admin_required():
+        return "Forbidden", 403
+
+    db = get_db()
+    db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    db.commit()
+
+    return redirect("/users")
+
+
+@main_bp.route("/users/toggle_role/<int:user_id>")
+def toggle_role(user_id):
+    if not login_required() or not admin_required():
+        return "Forbidden", 403
+
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+    if not user:
+        return redirect("/users")
+
+    new_role = "admin" if user["role"] == "viewer" else "viewer"
+
+    db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
+    db.commit()
+
+    return redirect("/users")
+
+
 
 
