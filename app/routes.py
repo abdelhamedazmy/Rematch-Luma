@@ -130,3 +130,19 @@ def api_check():
     # جهاز مختلف
     add_log("API", f"Blocked key: {key} (HWID mismatch)", get_ip())
     return jsonify({"status": "blocked"})
+    # ================= Users Management =================
+
+@main_bp.route("/users")
+def users_page():
+    if not login_required():
+        return redirect("/login")
+
+    if not admin_required():
+        return "Forbidden", 403
+
+    db = get_db()
+    users = db.execute("SELECT * FROM users").fetchall()
+
+    return render_template("users.html", users=users)
+
+
