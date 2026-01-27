@@ -1,3 +1,5 @@
+ADMIN_PASSWORD = "123456"
+
 from flask import Flask, request, jsonify, render_template_string
 import json
 import os
@@ -150,3 +152,4 @@ def admin_panel():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
