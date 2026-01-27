@@ -9,6 +9,7 @@ ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "123456"
 DB_FILE = "keys.json"
 
+
 # ----------------- Database -----------------
 def load_db():
     if not os.path.exists(DB_FILE):
@@ -20,6 +21,7 @@ def save_db(data):
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
+
 # ----------------- Auth -----------------
 def login_required(f):
     @wraps(f)
@@ -29,16 +31,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+
 # ----------------- Layout -----------------
 BASE_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
 <title>Rematch Egypt Panel</title>
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
@@ -71,21 +72,18 @@ body {
 }
 </style>
 </head>
-
 <body>
-
 <nav class="navbar navbar-dark px-4 py-3">
   <span class="navbar-brand fw-bold">🎮 Rematch Egypt Admin</span>
   <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
 </nav>
-
 <div class="container py-4">
   {{ content|safe }}
 </div>
-
 </body>
 </html>
 """
+
 
 # ----------------- Login -----------------
 @app.route("/login", methods=["GET", "POST"])
@@ -99,7 +97,12 @@ def login():
     return """
     <style>
     body {
-        background: linear-gradient(135deg, #020617, #0f172a);
+        background:
+          linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.75)),
+          url("/static/img/login_bg.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
         display:flex;
         align-items:center;
         justify-content:center;
@@ -108,34 +111,52 @@ def login():
         font-family:Segoe UI;
     }
     .box {
-        background:#020617;
+        backdrop-filter: blur(10px);
+        background: rgba(2,6,23,.75);
         padding:40px;
-        border-radius:15px;
-        width:340px;
+        border-radius:20px;
+        width:360px;
         border:1px solid #1f2937;
-        box-shadow:0 0 40px rgba(0,0,0,.6);
+        box-shadow:0 0 50px rgba(0,0,0,.7);
     }
     input,button {
         width:100%;
-        padding:12px;
-        margin:8px 0;
-        border-radius:10px;
+        padding:14px;
+        margin:10px 0;
+        border-radius:12px;
         border:none;
+        font-size:15px;
+    }
+    input {
+        background:#0f172a;
+        color:white;
+        border:1px solid #1f2937;
     }
     button {
         background:#2563eb;
         color:white;
         font-weight:bold;
+        transition:.2s;
+    }
+    button:hover {
+        background:#1d4ed8;
+        transform:scale(1.02);
+    }
+    h3 {
+        text-align:center;
+        margin-bottom:25px;
+        letter-spacing:1px;
     }
     </style>
 
     <form method="post" class="box">
-      <h3 style="text-align:center;margin-bottom:20px;">🎮 Rematch Egypt Login</h3>
-      <input name="username" placeholder="Username">
-      <input name="password" type="password" placeholder="Password">
+      <h3>🎮 Rematch Egypt Admin</h3>
+      <input name="username" placeholder="Username" required>
+      <input name="password" type="password" placeholder="Password" required>
       <button>Login</button>
     </form>
     """
+
 
 # ----------------- Dashboard -----------------
 @app.route("/dashboard")
@@ -170,14 +191,15 @@ def dashboard():
     """
     return render_template_string(BASE_HTML, content=content)
 
+
 # ----------------- Keys Page -----------------
 @app.route("/keys")
 @login_required
 def keys_page():
     data = load_db()
     now = int(time.time())
-
     rows = ""
+
     for k, v in data.items():
         lifetime = v["expires_in"] * 86400
         status = "Expired" if now - v["created_at"] > lifetime else "Active"
@@ -209,8 +231,8 @@ def keys_page():
       }});
     </script>
     """
-
     return render_template_string(BASE_HTML, content=content)
+
 
 # ----------------- Generate -----------------
 @app.route("/gen", methods=["POST"])
@@ -218,12 +240,17 @@ def keys_page():
 def generate():
     days = int(request.form.get("days", 30))
     data = load_db()
-
     key = str(uuid.uuid4())[:8].upper()
-    data[key] = {"hwid": None, "created_at": int(time.time()), "expires_in": days}
+
+    data[key] = {
+        "hwid": None,
+        "created_at": int(time.time()),
+        "expires_in": days
+    }
 
     save_db(data)
     return redirect("/keys")
+
 
 # ----------------- API Check -----------------
 @app.route("/check", methods=["POST"])
@@ -252,11 +279,13 @@ def check():
 
     return jsonify({"status": "blocked"})
 
+
 # ----------------- Logout -----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
