@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>System Logs</title>
+<style>
+body {
+    background:#0f172a;
+    color:white;
+    font-family:Segoe UI;
+    padding:40px;
+}
+.card {
+    background:#020617;
+    padding:20px;
+    border-radius:16px;
+}
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+th, td {
+    padding:10px;
+    border-bottom:1px solid #1f2937;
+    text-align:left;
+}
+th {
+    color:#38bdf8;
+}
+</style>
+</head>
+<body>
+
+<h1>📜 System Logs</h1>
+
+<div class="card">
+<table>
+<tr>
+    <th>ID</th>
+    <th>User</th>
+    <th>Action</th>
+    <th>IP</th>
+    <th>Time</th>
+</tr>
+
+{% for log in logs %}
+<tr>
+    <td>{{ log.id }}</td>
+    <td>{{ log.username }}</td>
+    <td>{{ log.action }}</td>
+    <td>{{ log.ip }}</td>
+    <td>{{ log.created_at }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+<br>
+<a href="/dashboard" style="color:#38bdf8">⬅ Back to Dashboard</a>
+
+</body>
+</html>
