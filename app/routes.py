@@ -45,12 +45,12 @@ def keys():
 
 
 # ================= Generate Key (Admin only) =================
-@main_bp.route("/keys/generate", methods=["POST"])
+@main_bp.route("/keys/generate", methods=["GET", "POST"])
 def generate_key():
-    if not login_required():
+    if not session.get("user"):
         return redirect("/login")
 
-    if not admin_required():
+    if session.get("role") != "admin":
         return "Forbidden", 403
 
     new_key = str(uuid.uuid4())[:10].upper()
@@ -63,6 +63,7 @@ def generate_key():
     db.commit()
 
     return redirect("/keys")
+
 
 
 # ================= Delete Key (Admin only) =================
@@ -79,3 +80,4 @@ def delete_key(key_id):
     db.commit()
 
     return redirect("/keys")
+
