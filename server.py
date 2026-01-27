@@ -29,51 +29,58 @@ def login_required(f):
         return f(*args, **kwargs)
     return wrapper
 
-# ----------------- UI Layout -----------------
+# ----------------- Layout -----------------
 BASE_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
 <title>Rematch Egypt Panel</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <style>
 body {
-    background: #0b1220;
+    background: linear-gradient(135deg, #020617, #0b1220);
     color: #e2e8f0;
     font-family: 'Segoe UI', sans-serif;
 }
-.card {
-    background: #111827;
-    border: 1px solid #1f2937;
-}
 .navbar {
     background: #020617;
+    border-bottom: 1px solid #1f2937;
+}
+.card {
+    background: #0f172a;
+    border: 1px solid #1f2937;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.table {
+    color: #e2e8f0;
 }
 .btn-primary {
     background: #2563eb;
     border: none;
 }
-.btn-danger {
-    background: #dc2626;
-}
-.table {
-    color: white;
+.btn-success {
+    background: #16a34a;
+    border: none;
 }
 </style>
 </head>
+
 <body>
 
-<nav class="navbar navbar-dark px-4">
+<nav class="navbar navbar-dark px-4 py-3">
   <span class="navbar-brand fw-bold">🎮 Rematch Egypt Admin</span>
   <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
 </nav>
 
 <div class="container py-4">
-  {{content}}
+  {{ content|safe }}
 </div>
 
 </body>
@@ -91,13 +98,39 @@ def login():
 
     return """
     <style>
-    body {background:#020617;display:flex;align-items:center;justify-content:center;height:100vh;color:white;}
-    .box{background:#0f172a;padding:40px;border-radius:12px;width:320px;}
-    input,button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none;}
-    button{background:#2563eb;color:white;}
+    body {
+        background: linear-gradient(135deg, #020617, #0f172a);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        color:white;
+        font-family:Segoe UI;
+    }
+    .box {
+        background:#020617;
+        padding:40px;
+        border-radius:15px;
+        width:340px;
+        border:1px solid #1f2937;
+        box-shadow:0 0 40px rgba(0,0,0,.6);
+    }
+    input,button {
+        width:100%;
+        padding:12px;
+        margin:8px 0;
+        border-radius:10px;
+        border:none;
+    }
+    button {
+        background:#2563eb;
+        color:white;
+        font-weight:bold;
+    }
     </style>
+
     <form method="post" class="box">
-      <h3 class="text-center mb-3">Rematch Egypt Login</h3>
+      <h3 style="text-align:center;margin-bottom:20px;">🎮 Rematch Egypt Login</h3>
       <input name="username" placeholder="Username">
       <input name="password" type="password" placeholder="Password">
       <button>Login</button>
@@ -125,10 +158,10 @@ def dashboard():
 
     content = f"""
     <div class="row g-4">
-      <div class="col-md-3"><div class="card p-3">Total Keys<br><h2>{total}</h2></div></div>
-      <div class="col-md-3"><div class="card p-3">Active<br><h2>{active}</h2></div></div>
-      <div class="col-md-3"><div class="card p-3">Expired<br><h2>{expired}</h2></div></div>
-      <div class="col-md-3"><div class="card p-3">Used<br><h2>{used}</h2></div></div>
+      <div class="col-md-3"><div class="card p-4 text-center"><h6>Total Keys</h6><h2>{total}</h2></div></div>
+      <div class="col-md-3"><div class="card p-4 text-center"><h6>Active</h6><h2>{active}</h2></div></div>
+      <div class="col-md-3"><div class="card p-4 text-center"><h6>Expired</h6><h2>{expired}</h2></div></div>
+      <div class="col-md-3"><div class="card p-4 text-center"><h6>Used</h6><h2>{used}</h2></div></div>
     </div>
 
     <div class="mt-4">
@@ -151,9 +184,9 @@ def keys_page():
         rows += f"<tr><td>{k}</td><td>{v['hwid'] or '-'}</td><td>{v['expires_in']} days</td><td>{status}</td></tr>"
 
     content = f"""
-    <h3>Keys Manager</h3>
+    <h3 class="mb-3">Keys Manager</h3>
 
-    <form method="post" action="/gen" class="mb-3">
+    <form method="post" action="/gen" class="mb-4">
       <select name="days" class="form-select w-25 d-inline">
         <option value="7">7 Days</option>
         <option value="30" selected>30 Days</option>
@@ -164,12 +197,16 @@ def keys_page():
     </form>
 
     <table id="keysTable" class="display">
-      <thead><tr><th>Key</th><th>HWID</th><th>Duration</th><th>Status</th></tr></thead>
+      <thead>
+        <tr><th>Key</th><th>HWID</th><th>Duration</th><th>Status</th></tr>
+      </thead>
       <tbody>{rows}</tbody>
     </table>
 
     <script>
-      $(document).ready(()=>$('#keysTable').DataTable());
+      $(document).ready(function() {{
+        $('#keysTable').DataTable();
+      }});
     </script>
     """
 
@@ -188,7 +225,7 @@ def generate():
     save_db(data)
     return redirect("/keys")
 
-# ----------------- Check API -----------------
+# ----------------- API Check -----------------
 @app.route("/check", methods=["POST"])
 def check():
     req = request.json
@@ -215,6 +252,7 @@ def check():
 
     return jsonify({"status": "blocked"})
 
+# ----------------- Logout -----------------
 @app.route("/logout")
 def logout():
     session.clear()
