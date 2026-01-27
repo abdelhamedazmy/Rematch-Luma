@@ -45,6 +45,13 @@ body {
     padding-left: 18px;
 }
 
+/* ===== Active link ===== */
+.sidebar a.active {
+    background: #1e293b;
+    color: #38bdf8;
+    font-weight: bold;
+}
+
 /* ===== Content ===== */
 .content {
     flex: 1;
@@ -104,11 +111,17 @@ table tr:hover {
 
 <div class="sidebar">
     <h2>🎮 Rematch</h2>
-    <a href="/dashboard">🏠 Dashboard</a>
-    <a href="/keys">🔑 Keys</a>
-    <a href="/users">👥 Users</a>
-    <a href="/logs">📜 Logs</a>
+
+    <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">🏠 Dashboard</a>
+
+    <a href="/keys" class="{% if request.path.startswith('/keys') %}active{% endif %}">🔑 Keys</a>
+
+    <a href="/users" class="{% if request.path.startswith('/users') %}active{% endif %}">👥 Users</a>
+
+    <a href="/logs" class="{% if request.path.startswith('/logs') %}active{% endif %}">📜 Logs</a>
+
     <hr style="border-color:#1f2937">
+
     <a href="/logout">🚪 Logout</a>
 </div>
 
