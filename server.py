@@ -1,16 +1,15 @@
-from flask import Flask, request, jsonify, render_template_string, redirect, session
+from flask import Flask, request, jsonify, redirect, session, render_template_string
 import json, os, uuid, time
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = "super-secret-key-change-me"
+app.secret_key = "change-this-secret"
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "123456"
-
 DB_FILE = "keys.json"
 
-# ===================== Database =====================
+# ----------------- Database -----------------
 def load_db():
     if not os.path.exists(DB_FILE):
         return {}
@@ -21,7 +20,7 @@ def save_db(data):
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-# ===================== Auth =====================
+# ----------------- Auth -----------------
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -30,45 +29,92 @@ def login_required(f):
         return f(*args, **kwargs)
     return wrapper
 
-# ===================== Login =====================
+# ----------------- UI Layout -----------------
+BASE_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rematch Egypt Panel</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<style>
+body {
+    background: #0b1220;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', sans-serif;
+}
+.card {
+    background: #111827;
+    border: 1px solid #1f2937;
+}
+.navbar {
+    background: #020617;
+}
+.btn-primary {
+    background: #2563eb;
+    border: none;
+}
+.btn-danger {
+    background: #dc2626;
+}
+.table {
+    color: white;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-4">
+  <span class="navbar-brand fw-bold">🎮 Rematch Egypt Admin</span>
+  <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
+</nav>
+
+<div class="container py-4">
+  {{content}}
+</div>
+
+</body>
+</html>
+"""
+
+# ----------------- Login -----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        u = request.form.get("username")
-        p = request.form.get("password")
-        if u == ADMIN_USERNAME and p == ADMIN_PASSWORD:
+        if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
             session["logged_in"] = True
             return redirect("/dashboard")
         return "Invalid login"
 
     return """
-    <h2>Rematch Egypt Admin</h2>
-    <form method="post">
-      <input name="username" placeholder="Username"><br><br>
-      <input name="password" type="password" placeholder="Password"><br><br>
+    <style>
+    body {background:#020617;display:flex;align-items:center;justify-content:center;height:100vh;color:white;}
+    .box{background:#0f172a;padding:40px;border-radius:12px;width:320px;}
+    input,button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none;}
+    button{background:#2563eb;color:white;}
+    </style>
+    <form method="post" class="box">
+      <h3 class="text-center mb-3">Rematch Egypt Login</h3>
+      <input name="username" placeholder="Username">
+      <input name="password" type="password" placeholder="Password">
       <button>Login</button>
     </form>
     """
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/login")
-
-# ===================== Dashboard =====================
+# ----------------- Dashboard -----------------
 @app.route("/dashboard")
 @login_required
 def dashboard():
     data = load_db()
-
-    total = len(data)
-    active = 0
-    expired = 0
-    used = 0
-
     now = int(time.time())
 
-    for k, v in data.items():
+    total = len(data)
+    active = expired = used = 0
+
+    for v in data.values():
         lifetime = v["expires_in"] * 86400
         if now - v["created_at"] > lifetime:
             expired += 1
@@ -77,115 +123,82 @@ def dashboard():
         if v["hwid"]:
             used += 1
 
-    return f"""
-    <h1>Dashboard</h1>
-    <ul>
-      <li>Total Keys: {total}</li>
-      <li>Active: {active}</li>
-      <li>Expired: {expired}</li>
-      <li>Used: {used}</li>
-    </ul>
-    <a href="/keys">Manage Keys</a> | <a href="/logout">Logout</a>
+    content = f"""
+    <div class="row g-4">
+      <div class="col-md-3"><div class="card p-3">Total Keys<br><h2>{total}</h2></div></div>
+      <div class="col-md-3"><div class="card p-3">Active<br><h2>{active}</h2></div></div>
+      <div class="col-md-3"><div class="card p-3">Expired<br><h2>{expired}</h2></div></div>
+      <div class="col-md-3"><div class="card p-3">Used<br><h2>{used}</h2></div></div>
+    </div>
+
+    <div class="mt-4">
+      <a href="/keys" class="btn btn-primary">Manage Keys</a>
+    </div>
     """
+    return render_template_string(BASE_HTML, content=content)
 
-# ===================== Generate Key =====================
-@app.route("/gen", methods=["POST"])
-@login_required
-def generate_key():
-    days = int(request.form.get("days", 30))
-    data = load_db()
-
-    key = str(uuid.uuid4())[:8].upper()
-    data[key] = {
-        "hwid": None,
-        "created_at": int(time.time()),
-        "expires_in": days
-    }
-
-    save_db(data)
-    return redirect("/keys")
-
-# ===================== Keys Table =====================
+# ----------------- Keys Page -----------------
 @app.route("/keys")
 @login_required
 def keys_page():
     data = load_db()
-
-    rows = ""
     now = int(time.time())
 
+    rows = ""
     for k, v in data.items():
         lifetime = v["expires_in"] * 86400
         status = "Expired" if now - v["created_at"] > lifetime else "Active"
-        rows += f"""
-        <tr>
-          <td>{k}</td>
-          <td>{v['hwid'] or '-'}</td>
-          <td>{v['expires_in']} days</td>
-          <td>{status}</td>
-        </tr>
-        """
+        rows += f"<tr><td>{k}</td><td>{v['hwid'] or '-'}</td><td>{v['expires_in']} days</td><td>{status}</td></tr>"
 
-    return f"""
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Keys Manager</title>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-</head>
-<body>
-<h2>Keys Manager</h2>
+    content = f"""
+    <h3>Keys Manager</h3>
 
-<form method="post" action="/gen">
-  Generate key for:
-  <select name="days">
-    <option value="7">7 days</option>
-    <option value="30" selected>30 days</option>
-    <option value="90">90 days</option>
-    <option value="9999">Lifetime</option>
-  </select>
-  <button>Generate</button>
-</form>
+    <form method="post" action="/gen" class="mb-3">
+      <select name="days" class="form-select w-25 d-inline">
+        <option value="7">7 Days</option>
+        <option value="30" selected>30 Days</option>
+        <option value="90">90 Days</option>
+        <option value="9999">Lifetime</option>
+      </select>
+      <button class="btn btn-success ms-2">Generate</button>
+    </form>
 
-<br>
+    <table id="keysTable" class="display">
+      <thead><tr><th>Key</th><th>HWID</th><th>Duration</th><th>Status</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
 
-<table id="keysTable">
-<thead>
-<tr><th>Key</th><th>HWID</th><th>Duration</th><th>Status</th></tr>
-</thead>
-<tbody>
-{rows}
-</tbody>
-</table>
+    <script>
+      $(document).ready(()=>$('#keysTable').DataTable());
+    </script>
+    """
 
-<br>
-<a href="/dashboard">Back to Dashboard</a>
+    return render_template_string(BASE_HTML, content=content)
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script>
-$(document).ready(function() {{
-    $('#keysTable').DataTable();
-}});
-</script>
-</body>
-</html>
-"""
+# ----------------- Generate -----------------
+@app.route("/gen", methods=["POST"])
+@login_required
+def generate():
+    days = int(request.form.get("days", 30))
+    data = load_db()
 
-# ===================== Client Check =====================
+    key = str(uuid.uuid4())[:8].upper()
+    data[key] = {"hwid": None, "created_at": int(time.time()), "expires_in": days}
+
+    save_db(data)
+    return redirect("/keys")
+
+# ----------------- Check API -----------------
 @app.route("/check", methods=["POST"])
-def check_key():
+def check():
     req = request.json
-    key = req.get("key")
-    hwid = req.get("hwid")
-
+    key, hwid = req.get("key"), req.get("hwid")
     data = load_db()
 
     if key not in data:
         return jsonify({"status": "invalid"})
 
     record = data[key]
-
     now = int(time.time())
     lifetime = record["expires_in"] * 86400
 
@@ -201,6 +214,11 @@ def check_key():
         return jsonify({"status": "ok"})
 
     return jsonify({"status": "blocked"})
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
