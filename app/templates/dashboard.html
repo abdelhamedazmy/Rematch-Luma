@@ -3,13 +3,28 @@
 {% block content %}
 <h1>🏠 Dashboard</h1>
 
-<div class="card">
-    Welcome: <b>{{ user }}</b><br>
-    Role: <b>{{ role }}</b>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+
+    <div class="card">
+        <h3>👥 Users</h3>
+        <p style="font-size:32px;color:#38bdf8;">{{ users_count }}</p>
+    </div>
+
+    <div class="card">
+        <h3>🔑 Keys</h3>
+        <p style="font-size:32px;color:#38bdf8;">{{ keys_count }}</p>
+    </div>
+
+    <div class="card">
+        <h3>🖥 Active Devices</h3>
+        <p style="font-size:32px;color:#38bdf8;">{{ active_keys }}</p>
+    </div>
+
 </div>
 
 <div class="card">
-    System Status: <span style="color:#22c55e">Online</span><br>
-    Control Panel running successfully.
+    <h3>Status</h3>
+    <p>🟢 Server Online</p>
+    <p>Welcome back <b>{{ user }}</b> ({{ role }})</p>
 </div>
 {% endblock %}
