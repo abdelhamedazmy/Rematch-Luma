@@ -15,6 +15,22 @@ body {
     border-radius:20px;
     margin-bottom:20px;
 }
+.button {
+    display:inline-block;
+    background:#2563eb;
+    color:white;
+    padding:12px 20px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:bold;
+    margin-top:10px;
+}
+.button:hover {
+    background:#1d4ed8;
+}
+.logout {
+    color:#38bdf8;
+}
 </style>
 </head>
 <body>
@@ -30,7 +46,14 @@ body {
     Dashboard is ready. Enterprise system initialized.
 </div>
 
-<a href="/logout" style="color:#38bdf8">Logout</a>
+<div class="card">
+    <h3>Management</h3>
+    <a href="/keys" class="button">🔑 Keys Manager</a>
+</div>
+
+<br>
+
+<a href="/logout" class="logout">Logout</a>
 
 </body>
 </html>
