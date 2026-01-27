@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{ title or "Control Panel" }}</title>
+<style>
+body {
+    margin: 0;
+    font-family: Segoe UI;
+    background: #0f172a;
+    color: white;
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: #020617;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.sidebar h2 {
+    color: #38bdf8;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    display: block;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.sidebar a:hover {
+    background: #1e293b;
+    color: white;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    padding: 40px;
+}
+
+.card {
+    background: #020617;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+}
+.button {
+    background: #2563eb;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+.button:hover {
+    background: #1d4ed8;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>🎮 Rematch</h2>
+    <a href="/dashboard">🏠 Dashboard</a>
+    <a href="/keys">🔑 Keys</a>
+    <a href="/users">👥 Users</a>
+    <a href="/logs">📜 Logs</a>
+    <hr style="border-color:#1f2937">
+    <a href="/logout">🚪 Logout</a>
+</div>
+
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>
