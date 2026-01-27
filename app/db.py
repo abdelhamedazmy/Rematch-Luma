@@ -20,6 +20,16 @@ def init_db():
         role TEXT
     )
     """)
+    # Keys table
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT UNIQUE,
+        hwid TEXT,
+        created_at TEXT,
+        expires_days INTEGER
+    )
+    """)
 
     # Logs table
     c.execute("""
@@ -38,3 +48,4 @@ def init_db():
 
     conn.commit()
     conn.close()
+
