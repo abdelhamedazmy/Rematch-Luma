@@ -1,93 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Users Management</title>
-<style>
-body {
-    background:#0f172a;
-    color:white;
-    font-family:Segoe UI;
-    padding:40px;
-}
-.card {
-    background:#020617;
-    padding:20px;
-    border-radius:16px;
-    margin-bottom:20px;
-}
-table {
-    width:100%;
-    border-collapse:collapse;
-}
-th, td {
-    padding:10px;
-    border-bottom:1px solid #1f2937;
-}
-.button {
-    background:#2563eb;
-    color:white;
-    padding:8px 14px;
-    border-radius:8px;
-    border:none;
-    cursor:pointer;
-}
-.danger { background:#dc2626; }
-.warn { background:#f59e0b; }
-input, select {
-    padding:8px;
-    border-radius:8px;
-    border:none;
-}
-</style>
-</head>
-<body>
+{% extends "base.html" %}
 
+{% block content %}
 <h1>👥 Users Management</h1>
 
 <div class="card">
-<h3>Create New User</h3>
-
 <form method="post" action="/users/create">
     <input name="username" placeholder="Username" required>
     <input name="password" placeholder="Password" required>
-
     <select name="role">
         <option value="viewer">Viewer</option>
         <option value="admin">Admin</option>
     </select>
-
-    <button class="button" type="submit">Create</button>
+    <button class="button">Create</button>
 </form>
 </div>
 
 <div class="card">
-<table>
-<tr>
+<table style="width:100%">
+<tr style="color:#38bdf8;">
     <th>ID</th>
     <th>Username</th>
     <th>Role</th>
     <th>Actions</th>
 </tr>
-
 {% for u in users %}
 <tr>
     <td>{{ u.id }}</td>
     <td>{{ u.username }}</td>
     <td>{{ u.role }}</td>
     <td>
-        <a href="/users/toggle_role/{{ u.id }}">
-            <button class="button warn">Change Role</button>
-        </a>
-        <a href="/users/delete/{{ u.id }}">
-            <button class="button danger">Delete</button>
-        </a>
+        <a href="/users/toggle_role/{{ u.id }}" class="button">Toggle Role</a>
+        <a href="/users/delete/{{ u.id }}" class="button">Delete</a>
     </td>
 </tr>
 {% endfor %}
 </table>
 </div>
-
-<a href="/dashboard" style="color:#38bdf8">⬅ Back to Dashboard</a>
-
-</body>
-</html>
+{% endblock %}
