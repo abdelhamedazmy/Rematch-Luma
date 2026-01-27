@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 DB_NAME = "database.db"
 
@@ -33,12 +34,22 @@ def init_db():
     )
     """)
 
+    # ================= LOGS TABLE (NEW) =================
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        action TEXT,
+        ip TEXT,
+        created_at TEXT
+    )
+    """)
+
     # ================= FIX OLD DATABASES =================
-    # لو جدول keys اتعمل قبل كده بدون عمود days
     try:
         c.execute("ALTER TABLE keys ADD COLUMN days INTEGER DEFAULT 30")
     except:
-        pass  # العمود موجود بالفعل
+        pass
 
     # ================= CREATE DEFAULT ADMIN =================
     c.execute("SELECT * FROM users WHERE username = 'admin'")
@@ -47,6 +58,20 @@ def init_db():
             "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
             ("admin", "123456", "admin")
         )
+
+    conn.commit()
+    conn.close()
+
+
+# ================= LOG HELPER FUNCTION =================
+def add_log(username, action, ip):
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute(
+        "INSERT INTO logs (username, action, ip, created_at) VALUES (?, ?, ?, ?)",
+        (username, action, ip, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    )
 
     conn.commit()
     conn.close()
