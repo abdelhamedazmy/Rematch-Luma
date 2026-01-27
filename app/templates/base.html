@@ -64,6 +64,55 @@ body {
     background: #1d4ed8;
 }
 </style>
+    /* ===== Animations & Effects ===== */
+
+/* Smooth page fade */
+.content {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Card hover effect */
+.card {
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* Button animation */
+.button {
+    transition: all 0.2s ease;
+}
+
+.button:hover {
+    transform: scale(1.03);
+}
+
+/* Sidebar links animation */
+.sidebar a {
+    transition: all 0.2s ease;
+}
+
+.sidebar a:hover {
+    padding-left: 18px;
+}
+
+/* Table rows hover */
+table tr {
+    transition: background 0.2s ease;
+}
+
+table tr:hover {
+    background: #1e293b;
+}
+
 </head>
 <body>
 
