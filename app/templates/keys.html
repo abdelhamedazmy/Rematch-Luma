@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Keys Manager</title>
+<style>
+body {
+    background:#0f172a;
+    color:white;
+    font-family:Segoe UI;
+    padding:40px;
+}
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+th, td {
+    padding:12px;
+    border-bottom:1px solid #1f2937;
+}
+a.button {
+    background:#2563eb;
+    padding:8px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    color:white;
+}
+a.delete {
+    background:#dc2626;
+}
+.card {
+    background:#020617;
+    padding:20px;
+    border-radius:16px;
+}
+</style>
+</head>
+<body>
+
+<h1>🔑 Keys Manager</h1>
+
+{% if role == "admin" %}
+<a class="button" href="/generate_key">+ Generate Key</a>
+{% endif %}
+
+<br><br>
+
+<div class="card">
+<table>
+<tr>
+    <th>ID</th>
+    <th>Key</th>
+    <th>HWID</th>
+    <th>Created</th>
+    <th>Days</th>
+    {% if role == "admin" %}<th>Actions</th>{% endif %}
+</tr>
+
+{% for k in keys %}
+<tr>
+    <td>{{ k.id }}</td>
+    <td>{{ k.key }}</td>
+    <td>{{ k.hwid or "-" }}</td>
+    <td>{{ k.created_at }}</td>
+    <td>{{ k.expires_days }}</td>
+    {% if role == "admin" %}
+    <td>
+        <a class="button delete" href="/delete_key/{{ k.id }}">Delete</a>
+    </td>
+    {% endif %}
+</tr>
+{% endfor %}
+</table>
+</div>
+
+<br>
+<a href="/dashboard" style="color:#38bdf8">⬅ Back to Dashboard</a>
+
+</body>
+</html>
