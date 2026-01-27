@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, request, jsonify
-from .db import get_db
+from .db import get_db, add_log
 import uuid
 
 main_bp = Blueprint("main", __name__)
@@ -10,6 +10,9 @@ def login_required():
 
 def admin_required():
     return session.get("role") == "admin"
+
+def get_ip():
+    return request.headers.get("X-Forwarded-For", request.remote_addr)
 
 
 # ================= Home =================
@@ -62,6 +65,9 @@ def generate_key():
     )
     db.commit()
 
+    # LOG
+    add_log(session["user"], f"Generated key: {new_key}", get_ip())
+
     return redirect("/keys")
 
 
@@ -75,13 +81,18 @@ def delete_key(key_id):
         return "Forbidden", 403
 
     db = get_db()
+
+    key_row = db.execute("SELECT key FROM keys WHERE id = ?", (key_id,)).fetchone()
+    if key_row:
+        add_log(session["user"], f"Deleted key: {key_row['key']}", get_ip())
+
     db.execute("DELETE FROM keys WHERE id = ?", (key_id,))
     db.commit()
 
     return redirect("/keys")
 
 
-# ================= API FOR EXE (IMPORTANT) =================
+# ================= API FOR EXE =================
 @main_bp.route("/check", methods=["POST"])
 def api_check():
     data = request.get_json()
@@ -100,17 +111,22 @@ def api_check():
 
     # Key مش موجود
     if not row:
+        add_log("API", f"Invalid key attempt: {key}", get_ip())
         return jsonify({"status": "invalid"})
 
     # أول استخدام → اربط HWID
     if row["hwid"] is None:
         db.execute("UPDATE keys SET hwid = ? WHERE id = ?", (hwid, row["id"]))
         db.commit()
+
+        add_log("API", f"Key bound: {key} → {hwid}", get_ip())
         return jsonify({"status": "bound"})
 
     # نفس الجهاز
     if row["hwid"] == hwid:
+        add_log("API", f"Key OK: {key}", get_ip())
         return jsonify({"status": "ok"})
 
     # جهاز مختلف
+    add_log("API", f"Blocked key: {key} (HWID mismatch)", get_ip())
     return jsonify({"status": "blocked"})
