@@ -1,42 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>{{ title }}</title>
-<style>
-body {
-    background:#0f172a;
-    color:white;
-    font-family:Segoe UI;
-    padding:40px;
-}
-.card {
-    background:#020617;
-    padding:30px;
-    border-radius:20px;
-    margin-bottom:20px;
-}
-.button {
-    display:inline-block;
-    background:#2563eb;
-    color:white;
-    padding:12px 20px;
-    border-radius:12px;
-    text-decoration:none;
-    font-weight:bold;
-    margin-top:10px;
-    margin-right:10px;
-}
-.button:hover {
-    background:#1d4ed8;
-}
-.logout {
-    color:#38bdf8;
-}
-</style>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h1>🎮 Rematch Egypt Control Panel</h1>
+{% block content %}
+<h1>🏠 Dashboard</h1>
 
 <div class="card">
     Welcome: <b>{{ user }}</b><br>
@@ -44,20 +9,7 @@ body {
 </div>
 
 <div class="card">
-    Dashboard is ready. Enterprise system initialized.
+    System Status: <span style="color:#22c55e">Online</span><br>
+    Control Panel running successfully.
 </div>
-
-<div class="card">
-    <h3>Management</h3>
-
-    <a href="/keys" class="button">🔑 Keys Manager</a>
-    <a href="/users" class="button">👥 Users Manager</a>
-    <a href="/logs" class="button">📜 Logs Viewer</a>
-</div>
-
-<br>
-
-<a href="/logout" class="logout">Logout</a>
-
-</body>
-</html>
+{% endblock %}
