@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>{{ title or "Control Panel" }}</title>
+
 <style>
 body {
     margin: 0;
-    font-family: Segoe UI;
+    font-family: Segoe UI, sans-serif;
     background: #0f172a;
     color: white;
     display: flex;
 }
 
-/* Sidebar */
+/* ===== Sidebar ===== */
 .sidebar {
     width: 240px;
     background: #020617;
@@ -32,52 +36,28 @@ body {
     padding: 12px;
     border-radius: 10px;
     margin-bottom: 8px;
+    transition: all 0.2s ease;
 }
 
 .sidebar a:hover {
     background: #1e293b;
     color: white;
+    padding-left: 18px;
 }
 
-/* Content */
+/* ===== Content ===== */
 .content {
     flex: 1;
     padding: 40px;
+    animation: fadeIn 0.4s ease-in-out;
 }
 
+/* ===== Cards ===== */
 .card {
     background: #020617;
     padding: 25px;
     border-radius: 18px;
     margin-bottom: 20px;
-}
-.button {
-    background: #2563eb;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    display: inline-block;
-}
-.button:hover {
-    background: #1d4ed8;
-}
-</style>
-    /* ===== Animations & Effects ===== */
-
-/* Smooth page fade */
-.content {
-    animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Card hover effect */
-.card {
     transition: all 0.2s ease;
 }
 
@@ -86,25 +66,24 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-/* Button animation */
+/* ===== Buttons ===== */
 .button {
+    background: #2563eb;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
     transition: all 0.2s ease;
 }
 
 .button:hover {
+    background: #1d4ed8;
     transform: scale(1.03);
 }
 
-/* Sidebar links animation */
-.sidebar a {
-    transition: all 0.2s ease;
-}
-
-.sidebar a:hover {
-    padding-left: 18px;
-}
-
-/* Table rows hover */
+/* ===== Tables ===== */
 table tr {
     transition: background 0.2s ease;
 }
@@ -113,7 +92,14 @@ table tr:hover {
     background: #1e293b;
 }
 
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
 </head>
+
 <body>
 
 <div class="sidebar">
