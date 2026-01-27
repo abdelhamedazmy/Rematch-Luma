@@ -31,12 +31,8 @@ th, td {
     border:none;
     cursor:pointer;
 }
-.danger {
-    background:#dc2626;
-}
-.warn {
-    background:#f59e0b;
-}
+.danger { background:#dc2626; }
+.warn { background:#f59e0b; }
 input, select {
     padding:8px;
     border-radius:8px;
@@ -50,14 +46,17 @@ input, select {
 
 <div class="card">
 <h3>Create New User</h3>
+
 <form method="post" action="/users/create">
     <input name="username" placeholder="Username" required>
     <input name="password" placeholder="Password" required>
+
     <select name="role">
         <option value="viewer">Viewer</option>
         <option value="admin">Admin</option>
     </select>
-    <button class="button">Create</button>
+
+    <button class="button" type="submit">Create</button>
 </form>
 </div>
 
