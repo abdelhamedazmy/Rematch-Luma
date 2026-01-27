@@ -9,7 +9,6 @@ ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "123456"
 DB_FILE = "keys.json"
 
-
 # ----------------- Database -----------------
 def load_db():
     if not os.path.exists(DB_FILE):
@@ -21,7 +20,6 @@ def save_db(data):
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-
 # ----------------- Auth -----------------
 def login_required(f):
     @wraps(f)
@@ -30,7 +28,6 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return wrapper
-
 
 # ----------------- Layout -----------------
 BASE_HTML = """
@@ -59,31 +56,25 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,.4);
 }
-.table {
-    color: #e2e8f0;
-}
-.btn-primary {
-    background: #2563eb;
-    border: none;
-}
-.btn-success {
-    background: #16a34a;
-    border: none;
-}
+.table { color: #e2e8f0; }
+.btn-primary { background: #2563eb; border: none; }
+.btn-success { background: #16a34a; border: none; }
 </style>
 </head>
 <body>
+
 <nav class="navbar navbar-dark px-4 py-3">
   <span class="navbar-brand fw-bold">🎮 Rematch Egypt Admin</span>
   <a href="/logout" class="btn btn-sm btn-outline-light">Logout</a>
 </nav>
+
 <div class="container py-4">
   {{ content|safe }}
 </div>
+
 </body>
 </html>
 """
-
 
 # ----------------- Login -----------------
 @app.route("/login", methods=["GET", "POST"])
@@ -94,12 +85,12 @@ def login():
             return redirect("/dashboard")
         return "Invalid login"
 
-    return """
+    return f"""
     <style>
-    body {
-        background:
-          linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.75)),
-          url("/static/img/login_bg.jpg");
+    body {{
+        background: 
+            linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.75)),
+            url('/static/img/login_bg.jpg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -109,54 +100,49 @@ def login():
         height:100vh;
         color:white;
         font-family:Segoe UI;
-    }
-    .box {
-        backdrop-filter: blur(10px);
-        background: rgba(2,6,23,.75);
+    }}
+    .box {{
+        background: rgba(2,6,23,.92);
         padding:40px;
         border-radius:20px;
         width:360px;
         border:1px solid #1f2937;
-        box-shadow:0 0 50px rgba(0,0,0,.7);
-    }
-    input,button {
+        box-shadow:0 0 50px rgba(0,0,0,.9);
+        backdrop-filter: blur(6px);
+    }}
+    input,button {{
         width:100%;
         padding:14px;
         margin:10px 0;
         border-radius:12px;
         border:none;
-        font-size:15px;
-    }
-    input {
-        background:#0f172a;
+        outline:none;
+    }}
+    input {{
+        background:#020617;
         color:white;
         border:1px solid #1f2937;
-    }
-    button {
-        background:#2563eb;
+    }}
+    button {{
+        background:linear-gradient(135deg,#2563eb,#38bdf8);
         color:white;
         font-weight:bold;
-        transition:.2s;
-    }
-    button:hover {
-        background:#1d4ed8;
-        transform:scale(1.02);
-    }
-    h3 {
-        text-align:center;
-        margin-bottom:25px;
         letter-spacing:1px;
-    }
+        transition:.3s;
+    }}
+    button:hover {{
+        transform: translateY(-2px);
+        box-shadow:0 0 20px #2563eb88;
+    }}
     </style>
 
     <form method="post" class="box">
-      <h3>🎮 Rematch Egypt Admin</h3>
-      <input name="username" placeholder="Username" required>
-      <input name="password" type="password" placeholder="Password" required>
+      <h3 style="text-align:center;margin-bottom:25px;">🎮 Rematch Egypt Admin</h3>
+      <input name="username" placeholder="Username">
+      <input name="password" type="password" placeholder="Password">
       <button>Login</button>
     </form>
     """
-
 
 # ----------------- Dashboard -----------------
 @app.route("/dashboard")
@@ -164,7 +150,6 @@ def login():
 def dashboard():
     data = load_db()
     now = int(time.time())
-
     total = len(data)
     active = expired = used = 0
 
@@ -184,13 +169,11 @@ def dashboard():
       <div class="col-md-3"><div class="card p-4 text-center"><h6>Expired</h6><h2>{expired}</h2></div></div>
       <div class="col-md-3"><div class="card p-4 text-center"><h6>Used</h6><h2>{used}</h2></div></div>
     </div>
-
     <div class="mt-4">
       <a href="/keys" class="btn btn-primary">Manage Keys</a>
     </div>
     """
     return render_template_string(BASE_HTML, content=content)
-
 
 # ----------------- Keys Page -----------------
 @app.route("/keys")
@@ -233,7 +216,6 @@ def keys_page():
     """
     return render_template_string(BASE_HTML, content=content)
 
-
 # ----------------- Generate -----------------
 @app.route("/gen", methods=["POST"])
 @login_required
@@ -241,18 +223,11 @@ def generate():
     days = int(request.form.get("days", 30))
     data = load_db()
     key = str(uuid.uuid4())[:8].upper()
-
-    data[key] = {
-        "hwid": None,
-        "created_at": int(time.time()),
-        "expires_in": days
-    }
-
+    data[key] = {"hwid": None, "created_at": int(time.time()), "expires_in": days}
     save_db(data)
     return redirect("/keys")
 
-
-# ----------------- API Check -----------------
+# ----------------- API -----------------
 @app.route("/check", methods=["POST"])
 def check():
     req = request.json
@@ -279,13 +254,11 @@ def check():
 
     return jsonify({"status": "blocked"})
 
-
 # ----------------- Logout -----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
