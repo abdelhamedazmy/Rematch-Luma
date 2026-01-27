@@ -27,11 +27,20 @@ def dashboard():
     if not login_required():
         return redirect("/login")
 
+    db = get_db()
+
+    users_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    keys_count = db.execute("SELECT COUNT(*) FROM keys").fetchone()[0]
+    active_keys = db.execute("SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL").fetchone()[0]
+
     return render_template(
         "dashboard.html",
         title="Rematch Egypt Control Panel",
         user=session["user"],
-        role=session["role"]
+        role=session["role"],
+        users_count=users_count,
+        keys_count=keys_count,
+        active_keys=active_keys
     )
 
 
@@ -214,6 +223,7 @@ def logs_page():
     ).fetchall()
 
     return render_template("logs.html", logs=logs)
+
 
 
 
