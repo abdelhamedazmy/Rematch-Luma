@@ -199,6 +199,21 @@ def toggle_role(user_id):
     db.commit()
 
     return redirect("/users")
+# ================= Logs Viewer (Admin only) =================
+@main_bp.route("/logs")
+def logs_page():
+    if not login_required():
+        return redirect("/login")
+
+    if not admin_required():
+        return "Forbidden", 403
+
+    db = get_db()
+    logs = db.execute(
+        "SELECT * FROM logs ORDER BY id DESC"
+    ).fetchall()
+
+    return render_template("logs.html", logs=logs)
 
 
 
