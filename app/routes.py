@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, request
+from flask import Blueprint, render_template, session, redirect, request, jsonify
 from .db import get_db
 import uuid
 
@@ -47,10 +47,10 @@ def keys():
 # ================= Generate Key (Admin only) =================
 @main_bp.route("/keys/generate", methods=["GET", "POST"])
 def generate_key():
-    if not session.get("user"):
+    if not login_required():
         return redirect("/login")
 
-    if session.get("role") != "admin":
+    if not admin_required():
         return "Forbidden", 403
 
     new_key = str(uuid.uuid4())[:10].upper()
@@ -63,7 +63,6 @@ def generate_key():
     db.commit()
 
     return redirect("/keys")
-
 
 
 # ================= Delete Key (Admin only) =================
@@ -81,3 +80,37 @@ def delete_key(key_id):
 
     return redirect("/keys")
 
+
+# ================= API FOR EXE (IMPORTANT) =================
+@main_bp.route("/check", methods=["POST"])
+def api_check():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"status": "error", "message": "No data"}), 400
+
+    key = data.get("key")
+    hwid = data.get("hwid")
+
+    if not key or not hwid:
+        return jsonify({"status": "error", "message": "Missing key or hwid"}), 400
+
+    db = get_db()
+    row = db.execute("SELECT * FROM keys WHERE key = ?", (key,)).fetchone()
+
+    # Key مش موجود
+    if not row:
+        return jsonify({"status": "invalid"})
+
+    # أول استخدام → اربط HWID
+    if row["hwid"] is None:
+        db.execute("UPDATE keys SET hwid = ? WHERE id = ?", (hwid, row["id"]))
+        db.commit()
+        return jsonify({"status": "bound"})
+
+    # نفس الجهاز
+    if row["hwid"] == hwid:
+        return jsonify({"status": "ok"})
+
+    # جهاز مختلف
+    return jsonify({"status": "blocked"})
