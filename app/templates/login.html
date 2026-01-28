@@ -19,96 +19,86 @@ body {
     align-items: center;
 }
 
-/* ===== 3D Animated Background ===== */
-.bg-3d {
+/* ===== Animated Wave Background ===== */
+#waves {
     position: fixed;
     inset: 0;
-    background: 
-        linear-gradient(120deg, #2563eb22, transparent),
-        linear-gradient(240deg, #7c3aed22, transparent);
-    animation: moveBg 12s infinite alternate ease-in-out;
     z-index: 0;
+    background: linear-gradient(120deg, #020617, #0f172a);
+    overflow: hidden;
 }
-
-@keyframes moveBg {
-    0% { transform: translateX(0) translateY(0); }
-    100% { transform: translateX(-80px) translateY(-60px); }
+.wave {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, #2563eb22 0%, transparent 60%);
+    animation: waveMove 20s linear infinite;
 }
+.wave:nth-child(2) { animation-duration: 30s; opacity: .4; }
+.wave:nth-child(3) { animation-duration: 40s; opacity: .2; }
 
-/* ===== Splash ===== */
-#splash {
-    position: fixed;
-    inset: 0;
-    background: #020617;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    animation: splashFade 2s forwards;
-}
-
-#splash img {
-    width: 90px;
-    animation: cinematicLogo 2s ease forwards;
-}
-
-@keyframes splashFade {
-    0%,70% { opacity: 1; }
-    100% { opacity: 0; pointer-events: none; }
-}
-
-@keyframes cinematicLogo {
-    0% {
-        opacity: 0;
-        transform: scale(0.3) rotate(-15deg);
-    }
-    60% {
-        opacity: 1;
-        transform: scale(1.05) rotate(0);
-    }
-    100% {
-        transform: scale(1);
-    }
+@keyframes waveMove {
+    from { transform: translate(-20%, -20%) rotate(0deg); }
+    to   { transform: translate(-20%, -20%) rotate(360deg); }
 }
 
 /* ===== Login Box ===== */
 .box {
     position: relative;
-    z-index: 2;
+    z-index: 5;
     width: 360px;
     padding: 35px;
-    background: rgba(2,6,23,0.9);
+    background: rgba(2,6,23,0.85);
     border: 1px solid #1e293b;
     border-radius: 24px;
     backdrop-filter: blur(14px);
     text-align: center;
     color: white;
-    animation: fadeUp .6s ease;
+    animation: cinematicEnter 1s ease;
+    transition: transform .2s ease;
+}
+.box:hover {
+    transform: translateY(-2px);
 }
 
-@keyframes fadeUp {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
+@keyframes cinematicEnter {
+    0% { opacity:0; transform: scale(.9) translateY(50px); filter: blur(10px);}
+    100% { opacity:1; transform: scale(1) translateY(0); filter: blur(0);}
 }
 
 /* ===== Logo ===== */
-.logo-img {
-    width: 90px;
+.logo-wrap {
+    position: relative;
+    display: inline-block;
     margin-bottom: 10px;
-    filter: drop-shadow(0 0 15px #2563eb88);
-    transition: .3s ease;
+    animation: logoDrop 1.2s ease;
+}
+@keyframes logoDrop {
+    from { transform: translateY(-40px) scale(.8); opacity: 0;}
+    to { transform: translateY(0) scale(1); opacity: 1;}
 }
 
-.logo-img:hover {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 25px #2563ebcc);
+.logo-wrap img {
+    width: 110px;
+    filter: drop-shadow(0 0 15px #2563ebaa);
+}
+
+/* Reflection */
+.logo-wrap::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("/static/img/logo.png") center/contain no-repeat;
+    transform: scaleY(-1);
+    opacity: .15;
+    filter: blur(2px);
 }
 
 /* ===== Inputs ===== */
-.input-group {
-    position: relative;
-    margin: 15px 0;
-}
+.input-group { margin: 15px 0; position: relative; }
 
 input {
     width: 100%;
@@ -119,12 +109,8 @@ input {
     border: 1px solid #1e293b;
     outline: none;
 }
+input:focus { border-color: #2563eb; }
 
-input:focus {
-    border-color: #2563eb;
-}
-
-/* ===== Show Password ===== */
 .toggle-pass {
     position: absolute;
     right: 12px;
@@ -148,15 +134,13 @@ button {
     cursor: pointer;
     transition: .2s ease;
 }
-
 button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(37,99,235,.4);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px #2563eb55;
 }
 
-/* ===== Shake Error ===== */
+/* Shake */
 .shake { animation: shake .4s; }
-
 @keyframes shake {
     0% {transform:translateX(0);}
     25% {transform:translateX(-6px);}
@@ -165,25 +149,27 @@ button:hover {
     100% {transform:translateX(0);}
 }
 
-/* ===== Mobile ===== */
+/* Mobile */
 @media(max-width:500px){
     .box { width: 90%; }
 }
 </style>
 </head>
-
 <body>
 
-<div class="bg-3d"></div>
-
-<!-- Splash -->
-<div id="splash">
-    <img src="/static/img/logo.png">
+<!-- Animated Background -->
+<div id="waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
 </div>
 
 <!-- Login -->
 <form class="box" method="post">
-    <img src="/static/img/logo.png" class="logo-img">
+    <div class="logo-wrap">
+        <img src="/static/img/logo.png">
+    </div>
+
     <h2>Rematch Egypt Control Panel</h2>
 
     <div class="input-group">
@@ -199,15 +185,24 @@ button:hover {
 </form>
 
 <script>
+// Show/Hide
 function togglePass(){
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+    const i = document.getElementById("password");
+    i.type = i.type === "password" ? "text" : "password";
 }
 
-if(window.location.search.includes("error")){
+// Fake error shake
+if(location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
-</script>
 
+// Mouse interaction (Gaming feel)
+document.addEventListener("mousemove", e => {
+    const box = document.querySelector(".box");
+    const x = (window.innerWidth/2 - e.clientX) / 60;
+    const y = (window.innerHeight/2 - e.clientY) / 60;
+    box.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+});
+</script>
 </body>
 </html>
