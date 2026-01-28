@@ -2,6 +2,8 @@
 <html>
 <head>
 <title>Rematch Egypt Control Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
     background: url("/static/img/login_bg.jpg") center/cover no-repeat;
@@ -9,46 +11,74 @@ body {
     display:flex;
     justify-content:center;
     align-items:center;
-    font-family:Segoe UI;
+    font-family:Segoe UI, sans-serif;
 }
 
-/* صندوق اللوجين */
+/* Box */
 .box {
-    background: rgba(0,0,0,.8);
-    padding:32px;              /* كان 40 */
-    border-radius:20px;
-    width:320px;               /* كان 360 */
+    background: rgba(0,0,0,.82);
+    padding:32px;
+    border-radius:22px;
+    width:320px;
     color:white;
     text-align:center;
     animation: fade .6s ease;
+    box-shadow: 0 0 0 rgba(56,189,248,0.4);
+    animation: fade .6s ease, glow 3s infinite alternate;
 }
 
-/* أنيميشن الدخول */
+@keyframes glow {
+    from { box-shadow: 0 0 0 rgba(56,189,248,0.2); }
+    to   { box-shadow: 0 0 25px rgba(56,189,248,0.25); }
+}
+
 @keyframes fade {
     from {opacity:0; transform:translateY(30px)}
     to {opacity:1; transform:translateY(0)}
 }
 
-/* الحقول والزر */
-input, button {
-    width:100%;
-    height:44px;               /* يوحّد الارتفاع */
-    padding:8px 14px;          /* أصغر وأنعم */
-    margin:8px 0;              /* مسافة أهدى */
-    border-radius:12px;
-    border:none;
-    font-size:14.5px;
-    box-sizing:border-box;
+/* Inputs */
+.input-group {
+    position: relative;
 }
 
-/* الحقول */
 input {
+    width:100%;
+    height:44px;
+    padding:8px 14px;
+    margin:8px 0;
+    border-radius:12px;
+    border:1px solid transparent;
+    font-size:14.5px;
     background:#f1f5f9;
+    box-sizing:border-box;
     outline:none;
+    transition:.2s ease;
 }
 
-/* زر الدخول */
+input:focus {
+    border:1px solid #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56,189,248,.2);
+}
+
+/* Show password */
+.toggle-pass {
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:13px;
+    color:#64748b;
+}
+
+/* Button */
 button {
+    width:100%;
+    height:46px;
+    margin-top:12px;
+    border-radius:14px;
+    border:none;
     background:#2563eb;
     color:white;
     font-weight:bold;
@@ -60,20 +90,63 @@ button:hover {
     background:#1d4ed8;
     transform:translateY(-1px);
 }
+
+button.loading {
+    opacity:.7;
+    pointer-events:none;
+}
+
+/* Messages */
+.message {
+    margin-top:10px;
+    font-size:13px;
+    display:none;
+}
+
+.error { color:#f87171; }
+.success { color:#4ade80; }
+
+/* Responsive */
+@media(max-width:480px){
+    .box { width:90%; }
+}
 </style>
 </head>
 <body>
 
-<form class="box" method="post">
-    <img src="/static/img/logo.png" width="80"><br><br>
+<form class="box" method="post" onsubmit="startLoading()">
+    <img src="/static/img/logo.png" width="75"><br><br>
 
     <h2 style="margin-bottom:18px;">Rematch Egypt Control Panel</h2>
 
-    <input name="username" placeholder="Username" required>
-    <input name="password" type="password" placeholder="Password" required>
+    <div class="input-group">
+        <input name="username" placeholder="Username" required>
+    </div>
 
-    <button>Login</button>
+    <div class="input-group">
+        <input id="password" name="password" type="password" placeholder="Password" required>
+        <span class="toggle-pass" onclick="togglePass()">Show</span>
+    </div>
+
+    <button id="loginBtn">Login</button>
+
+    <!-- جاهزة لو حبيت تستخدمها لاحقًا -->
+    <div id="error" class="message error">Invalid credentials</div>
+    <div id="success" class="message success">Login successful...</div>
 </form>
+
+<script>
+function togglePass() {
+    const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+}
+
+function startLoading() {
+    const btn = document.getElementById("loginBtn");
+    btn.classList.add("loading");
+    btn.innerText = "Logging in...";
+}
+</script>
 
 </body>
 </html>
