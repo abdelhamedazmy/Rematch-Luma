@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-
 <h1 style="margin-bottom:25px;">Dashboard</h1>
-
 <div class="cards-grid">
-
   <!-- Users -->
   <div class="stat-card blue">
     <svg class="icon" viewBox="0 0 24 24">
@@ -13,10 +10,9 @@
     </svg>
     <div>
       <p style="opacity:.7;margin:0;">Total Users</p>
-      <h2 id="usersCount" class="counter">0</h2>
+      <h2 class="counter" data-target="{{ users_count }}">0</h2>
     </div>
   </div>
-
   <!-- Keys -->
   <div class="stat-card purple">
     <svg class="icon" viewBox="0 0 24 24">
@@ -25,10 +21,9 @@
     </svg>
     <div>
       <p style="opacity:.7;margin:0;">Total Keys</p>
-      <h2 id="keysCount" class="counter">0</h2>
+      <h2 class="counter" data-target="{{ keys_count }}">0</h2>
     </div>
   </div>
-
   <!-- Devices -->
   <div class="stat-card green">
     <svg class="icon" viewBox="0 0 24 24">
@@ -37,42 +32,8 @@
     </svg>
     <div>
       <p style="opacity:.7;margin:0;">Active Devices</p>
-      <h2 id="devicesCount" class="counter">0</h2>
+      <h2 class="counter" data-target="{{ active_keys }}">0</h2>
     </div>
   </div>
-
 </div>
-
-<script>
-// ===== Animated Counter =====
-function animate(el, target) {
-    let current = parseInt(el.innerText) || 0;
-    const step = Math.ceil((target - current) / 15);
-
-    if (current < target) {
-        el.innerText = current + step;
-    } else if (current > target) {
-        el.innerText = current - step;
-    } else {
-        el.innerText = target;
-    }
-}
-
-// ===== SSE Live Updates =====
-const source = new EventSource("/live-stats");
-
-source.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-
-    animate(document.getElementById("usersCount"), data.users);
-    animate(document.getElementById("keysCount"), data.keys);
-    animate(document.getElementById("devicesCount"), data.active);
-};
-
-// لو الاتصال وقع
-source.onerror = function() {
-    console.warn("Live connection lost, retrying...");
-};
-</script>
-
 {% endblock %}
