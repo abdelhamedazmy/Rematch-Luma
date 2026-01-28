@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>{{ title or "Control Panel" }}</title>
 
 <style>
@@ -161,6 +160,7 @@ body {
     font-size: 12px;
     font-weight: bold;
 }
+
 .red { background: #dc2626; }
 .blue { background: #2563eb; }
 .green { background: #16a34a; }
@@ -195,10 +195,52 @@ body {
     .menu-btn { display: inline-block; }
     .content { padding: 20px; }
 }
+
+/* ===== Loading Bar ===== */
+#loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    z-index: 9999;
+    transition: width 0.3s ease;
+}
+
+/* ===== Toast ===== */
+#toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #020617;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: 1px solid #1e293b;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-success { border-left: 4px solid #22c55e; }
+.toast-error { border-left: 4px solid #dc2626; }
+.toast-info { border-left: 4px solid #3b82f6; }
 </style>
 </head>
 
 <body>
+
+<div id="loading-bar"></div>
+<div id="toast"></div>
 
 <div class="sidebar" id="sidebar">
     <h2>Rematch</h2>
@@ -224,6 +266,7 @@ body {
     </a>
 
     <hr style="border-color:#1f2937">
+
     <a href="/logout">
         <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
         Logout
@@ -238,6 +281,31 @@ body {
 <script>
 function toggleMenu() {
     document.getElementById("sidebar").classList.toggle("show");
+}
+
+// Loading bar
+document.addEventListener("DOMContentLoaded", () => {
+    const bar = document.getElementById("loading-bar");
+    bar.style.width = "30%";
+
+    window.addEventListener("load", () => {
+        bar.style.width = "100%";
+        setTimeout(() => bar.style.opacity = "0", 400);
+    });
+});
+
+// Toast
+function showToast(message, type="info") {
+    const toast = document.getElementById("toast");
+    toast.className = "";
+    toast.classList.add(type === "success" ? "toast-success" :
+                        type === "error" ? "toast-error" : "toast-info");
+    toast.innerText = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
 }
 </script>
 
