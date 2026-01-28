@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>🔑 Keys Manager</h1>
+
+<h1>Keys Manager</h1>
 
 {% if role == "admin" %}
 <form action="/keys/generate" method="post">
@@ -11,10 +11,11 @@
 {% endif %}
 
 <div class="card">
-<table style="width:100%;border-collapse:collapse;">
-<tr style="color:#38bdf8;">
+<table class="pro-table">
+<tr>
     <th>ID</th>
     <th>Key</th>
+    <th>Status</th>
     <th>HWID</th>
     <th>Days</th>
     {% if role == "admin" %}<th>Actions</th>{% endif %}
@@ -24,13 +25,26 @@
 <tr>
     <td>{{ k.id }}</td>
     <td>{{ k.key }}</td>
+
+    <td>
+        {% if k.hwid %}
+            <span class="badge green">Bound</span>
+        {% else %}
+            <span class="badge yellow">Free</span>
+        {% endif %}
+    </td>
+
     <td>{{ k.hwid or "-" }}</td>
     <td>{{ k.days }}</td>
+
     {% if role == "admin" %}
-    <td><a href="/keys/delete/{{ k.id }}" class="button">Delete</a></td>
+    <td>
+        <a href="/keys/delete/{{ k.id }}" class="button">Delete</a>
+    </td>
     {% endif %}
 </tr>
 {% endfor %}
 </table>
 </div>
+
 {% endblock %}
