@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Rematch Egypt Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 * { box-sizing: border-box; }
 
@@ -25,7 +26,7 @@ canvas {
     z-index: 0;
 }
 
-/* Card */
+/* Login Card */
 .box {
     position: relative;
     z-index: 2;
@@ -39,7 +40,7 @@ canvas {
     color: white;
 }
 
-/* Mouse glow */
+/* Mouse reactive glow */
 .box::before {
     content: "";
     position: absolute;
@@ -50,37 +51,14 @@ canvas {
 }
 
 /* Logo */
-.logo {
-    margin-bottom: 10px;
-    animation: logoIntro 1.2s ease;
-}
 .logo img {
     width: 80px;
     filter: drop-shadow(0 0 12px rgba(120,150,255,.35));
 }
-.logo::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    width: 80px;
-    height: 40px;
-    transform: translateX(-50%) scaleY(-1);
-    background: url("/static/img/logo.png") center/contain no-repeat;
-    opacity: .08;
-    filter: blur(2px);
-}
-
-@keyframes logoIntro {
-    from {opacity:0; transform:scale(.8) translateY(-20px); filter:blur(8px);}
-    to {opacity:1; transform:scale(1) translateY(0); filter:blur(0);}
-}
 
 /* Inputs */
-.input-group {
-    margin: 15px 0;
-    position: relative;
-}
+.input-group { margin: 15px 0; position: relative; }
+
 input {
     width: 100%;
     padding: 14px 44px 14px 16px;
@@ -90,6 +68,7 @@ input {
     color: white;
     outline: none;
 }
+
 input:focus { border-color: #3b82f6; }
 
 /* Show pass */
@@ -102,6 +81,7 @@ input:focus { border-color: #3b82f6; }
     opacity: .6;
     cursor: pointer;
 }
+
 .toggle-pass:hover { opacity: 1; }
 
 /* Button */
@@ -116,18 +96,10 @@ button {
     cursor: pointer;
     transition: .25s ease;
 }
+
 button:hover {
     transform: translateY(-1px);
     box-shadow: 0 10px 35px rgba(37,99,235,.35);
-}
-
-/* Shake */
-.shake { animation: shake .4s; }
-@keyframes shake {
-    0%,100%{transform:translateX(0)}
-    25%{transform:translateX(-6px)}
-    50%{transform:translateX(6px)}
-    75%{transform:translateX(-6px)}
 }
 
 /* Mobile */
@@ -136,9 +108,10 @@ button:hover {
 }
 </style>
 </head>
+
 <body>
 
-<canvas id="particles"></canvas>
+<canvas id="bg"></canvas>
 
 <form class="box" method="post">
     <div class="logo">
@@ -160,18 +133,13 @@ button:hover {
 </form>
 
 <script>
-// Show / Hide
+// Show password
 function togglePass(){
     const i = document.getElementById("password");
     i.type = i.type === "password" ? "text" : "password";
 }
 
-// Shake demo
-if(location.search.includes("error")){
-    document.querySelector(".box").classList.add("shake");
-}
-
-// Mouse glow
+// Glow follows mouse
 const card = document.querySelector(".box");
 document.addEventListener("mousemove", e=>{
     const r = card.getBoundingClientRect();
@@ -179,125 +147,118 @@ document.addEventListener("mousemove", e=>{
     card.style.setProperty("--y", `${e.clientY - r.top}px`);
 });
 
-// ===== Canvas System =====
-const canvas = document.getElementById("particles");
+// Canvas setup
+const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
-
 let w, h;
+
 function resize(){
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
 }
-resize();
 window.addEventListener("resize", resize);
+resize();
+
+let mouse = {x:null, y:null};
+window.addEventListener("mousemove", e=>{
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
 
 // Particles
 const particles = Array.from({length: 90}, () => ({
     x: Math.random()*w,
     y: Math.random()*h,
-    r: Math.random()*2 + 1.3,
-    dx: (Math.random() - 0.5) * 0.4,
-    dy: (Math.random() - 0.5) * 0.4
+    r: 2,
+    dx: (Math.random()-.5)*0.6,
+    dy: (Math.random()-.5)*0.6
 }));
-
-// Mouse
-const mouse = { x: null, y: null };
-window.addEventListener("mousemove", e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-
-    // add ripple on movement
-    ripples.push({
-        x: mouse.x,
-        y: mouse.y,
-        r: 0,
-        alpha: 0.35
-    });
-});
-window.addEventListener("mouseleave", () => {
-    mouse.x = null;
-    mouse.y = null;
-});
 
 // Ripples
 const ripples = [];
+window.addEventListener("mousemove", e=>{
+    ripples.push({x:e.clientX,y:e.clientY,r:0,a:.25});
+});
 
 function animate(){
     ctx.clearRect(0,0,w,h);
 
     // Particles
     particles.forEach(p=>{
-        p.x += p.dx;
-        p.y += p.dy;
-
-        if(p.x < 0 || p.x > w) p.dx *= -1;
-        if(p.y < 0 || p.y > h) p.dy *= -1;
+        p.x+=p.dx;
+        p.y+=p.dy;
+        if(p.x<0||p.x>w)p.dx*=-1;
+        if(p.y<0||p.y>h)p.dy*=-1;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = "rgba(140,180,255,0.7)";
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle="rgba(140,180,255,.8)";
         ctx.fill();
     });
 
-    // Lines between particles
+    // Lines
     for(let i=0;i<particles.length;i++){
         for(let j=i+1;j<particles.length;j++){
-            const a = particles[i];
-            const b = particles[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const a=particles[i], b=particles[j];
+            const dx=a.x-b.x, dy=a.y-b.y;
+            const dist=Math.sqrt(dx*dx+dy*dy);
 
-            if(dist < 140){
-                ctx.strokeStyle = `rgba(120,170,255,${0.18 - dist/140 * 0.18})`;
-                ctx.lineWidth = 1;
+            if(dist<130){
+                ctx.strokeStyle=`rgba(120,170,255,${.18-dist/130*.18})`;
                 ctx.beginPath();
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
+                ctx.moveTo(a.x,a.y);
+                ctx.lineTo(b.x,b.y);
                 ctx.stroke();
             }
         }
     }
 
     // Lines to mouse
-    if(mouse.x && mouse.y){
+    if(mouse.x){
         particles.forEach(p=>{
-            const dx = p.x - mouse.x;
-            const dy = p.y - mouse.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-
-            if(dist < 180){
-                ctx.strokeStyle = `rgba(180,210,255,${0.35 - dist/180 * 0.35})`;
-                ctx.lineWidth = 1.2;
+            const dx=p.x-mouse.x, dy=p.y-mouse.y;
+            const dist=Math.sqrt(dx*dx+dy*dy);
+            if(dist<160){
+                ctx.strokeStyle=`rgba(180,210,255,${.35-dist/160*.35})`;
                 ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(mouse.x, mouse.y);
+                ctx.moveTo(p.x,p.y);
+                ctx.lineTo(mouse.x,mouse.y);
                 ctx.stroke();
             }
         });
     }
 
-    // ===== Ripple Effect =====
-    for(let i = ripples.length - 1; i >= 0; i--){
-        const r = ripples[i];
+    // Ripples + blur + interaction
+    for(let i=ripples.length-1;i>=0;i--){
+        const r=ripples[i];
+
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
-        ctx.strokeStyle = `rgba(120,170,255,${r.alpha})`;
-        ctx.lineWidth = 1.2;
+        ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(140,190,255,${r.a})`;
+        ctx.shadowBlur=15;
+        ctx.shadowColor="rgba(140,190,255,.6)";
         ctx.stroke();
+        ctx.restore();
 
-        r.r += 1.6;
-        r.alpha -= 0.004;
+        particles.forEach(p=>{
+            const dx=p.x-r.x, dy=p.y-r.y;
+            const dist=Math.sqrt(dx*dx+dy*dy);
+            if(dist<120){
+                const force=(120-dist)/120*.05;
+                p.x+=dx*force;
+                p.y+=dy*force;
+            }
+        });
 
-        if(r.alpha <= 0){
-            ripples.splice(i,1);
-        }
+        r.r+=1.8;
+        r.a-=0.005;
+        if(r.a<=0) ripples.splice(i,1);
     }
 
     requestAnimationFrame(animate);
 }
 animate();
 </script>
-
 </body>
 </html>
