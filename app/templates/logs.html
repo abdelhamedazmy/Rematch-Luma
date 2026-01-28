@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>📜 System Logs</h1>
+
+<h1>System Logs</h1>
 
 <div class="card">
-<table style="width:100%">
-<tr style="color:#38bdf8;">
+<table class="pro-table">
+<tr>
     <th>ID</th>
     <th>User</th>
     <th>Action</th>
@@ -16,7 +16,15 @@
 {% for log in logs %}
 <tr>
     <td>{{ log.id }}</td>
-    <td>{{ log.username }}</td>
+
+    <td>
+        {% if log.username == "admin" %}
+            <span class="badge red">admin</span>
+        {% else %}
+            <span class="badge blue">{{ log.username }}</span>
+        {% endif %}
+    </td>
+
     <td>{{ log.action }}</td>
     <td>{{ log.ip }}</td>
     <td>{{ log.created_at }}</td>
@@ -24,4 +32,5 @@
 {% endfor %}
 </table>
 </div>
+
 {% endblock %}
