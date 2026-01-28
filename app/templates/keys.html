@@ -12,6 +12,7 @@
 
 <div class="card">
 <table class="pro-table">
+<thead>
 <tr>
     <th>ID</th>
     <th>Key</th>
@@ -20,11 +21,13 @@
     <th>Days</th>
     {% if role == "admin" %}<th>Actions</th>{% endif %}
 </tr>
+</thead>
 
+<tbody>
 {% for k in keys %}
 <tr>
     <td>{{ k.id }}</td>
-    <td>{{ k.key }}</td>
+    <td style="font-family:monospace;">{{ k.key }}</td>
 
     <td>
         {% if k.hwid %}
@@ -39,11 +42,16 @@
 
     {% if role == "admin" %}
     <td>
-        <a href="/keys/delete/{{ k.id }}" class="button">Delete</a>
+        <a href="/keys/delete/{{ k.id }}"
+           class="button"
+           onclick="return confirm('Delete this key?')">
+           Delete
+        </a>
     </td>
     {% endif %}
 </tr>
 {% endfor %}
+</tbody>
 </table>
 </div>
 
