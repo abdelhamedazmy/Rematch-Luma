@@ -1,98 +1,155 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>Rematch Egypt Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== Reset ===== */
+* {
+    box-sizing: border-box;
+}
+
+/* ===== Body + Background ===== */
 body {
     margin: 0;
     height: 100vh;
     font-family: Segoe UI, sans-serif;
-    background: linear-gradient(-45deg, #020617, #0f172a, #020617, #111827);
-    background-size: 400% 400%;
-    animation: bgMove 12s ease infinite;
+    background: radial-gradient(circle at top, #0f172a, #020617);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== Particles Canvas ===== */
+#particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* ===== Splash Screen ===== */
+#splash {
+    position: fixed;
+    inset: 0;
+    background: #020617;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 28px;
+    letter-spacing: 2px;
+    z-index: 10;
+    animation: splashFade 2s forwards;
 }
 
-@keyframes bgMove {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+@keyframes splashFade {
+    0% {opacity:1;}
+    70% {opacity:1;}
+    100% {opacity:0; pointer-events:none;}
 }
 
+/* ===== Login Box ===== */
 .box {
+    position: relative;
+    z-index: 2;
     width: 360px;
-    background: rgba(2,6,23,0.88);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 22px;
+    padding: 35px;
+    background: rgba(2,6,23,0.85);
+    border: 1px solid #1e293b;
+    border-radius: 24px;
+    backdrop-filter: blur(12px);
     text-align: center;
     color: white;
-    box-shadow: 0 30px 80px rgba(0,0,0,.7);
-    animation: fade .6s ease;
+    animation: fadeUp .6s ease;
 }
 
-@keyframes fade {
-    from {opacity:0; transform:translateY(30px)}
-    to {opacity:1; transform:translateY(0)}
+@keyframes fadeUp {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
 }
 
+/* ===== Logo ===== */
 .logo {
-    width: 80px;
+    font-size: 36px;
+    font-weight: bold;
     margin-bottom: 10px;
 }
 
-h2 {
-    margin-bottom: 25px;
-    font-weight: 600;
+/* ===== Inputs ===== */
+.input-group {
+    position: relative;
+    margin: 15px 0;
 }
 
-.field {
+input {
     width: 100%;
-    height: 48px;
+    padding: 14px 45px 14px 15px;
     border-radius: 14px;
     border: none;
-    padding: 0 16px;
-    margin-bottom: 14px;
-    font-size: 15px;
-    background: #f1f5f9;
-    box-sizing: border-box;
+    background: #0f172a;
+    color: white;
+    outline: none;
+    border: 1px solid #1e293b;
 }
 
-.field:focus {
-    outline: 2px solid #2563eb;
+input:focus {
+    border-color: #2563eb;
 }
 
-.button {
+/* ===== Show Password ===== */
+.toggle-pass {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: .6;
+    font-size: 14px;
+}
+
+.toggle-pass:hover {
+    opacity: 1;
+}
+
+/* ===== Button ===== */
+button {
     width: 100%;
-    height: 48px;
-    border-radius: 14px;
+    padding: 14px;
+    border-radius: 16px;
     border: none;
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    background: linear-gradient(90deg, #2563eb, #4f46e5);
     color: white;
     font-weight: bold;
-    font-size: 15px;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: .2s ease;
 }
 
-.button:hover {
+button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 30px rgba(37,99,235,.4);
+    box-shadow: 0 8px 25px rgba(37,99,235,.4);
 }
 
-.button:active {
-    transform: scale(.97);
+/* ===== Shake Error ===== */
+.shake {
+    animation: shake .4s;
 }
 
-/* موبايل */
-@media (max-width: 480px) {
+@keyframes shake {
+    0% {transform:translateX(0);}
+    25% {transform:translateX(-6px);}
+    50% {transform:translateX(6px);}
+    75% {transform:translateX(-6px);}
+    100% {transform:translateX(0);}
+}
+
+/* ===== Mobile ===== */
+@media(max-width:500px){
     .box {
         width: 90%;
-        padding: 30px;
+        border-radius: 18px;
     }
 }
 </style>
@@ -100,15 +157,77 @@ h2 {
 
 <body>
 
+<!-- Splash -->
+<div id="splash">R/M</div>
+
+<!-- Particles -->
+<canvas id="particles"></canvas>
+
+<!-- Login -->
 <form class="box" method="post">
-    <img src="/static/img/logo.png" class="logo">
+    <div class="logo">R/M</div>
     <h2>Rematch Egypt Control Panel</h2>
 
-    <input class="field" name="username" placeholder="Username" required>
-    <input class="field" name="password" type="password" placeholder="Password" required>
+    <div class="input-group">
+        <input name="username" placeholder="Username" required>
+    </div>
 
-    <button class="button">Login</button>
+    <div class="input-group">
+        <input id="password" name="password" type="password" placeholder="Password" required>
+        <span class="toggle-pass" onclick="togglePass()">Show</span>
+    </div>
+
+    <button>Login</button>
 </form>
+
+<script>
+// ===== Show / Hide password =====
+function togglePass(){
+    const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+}
+
+// ===== Fake error demo (احذفها في الإنتاج) =====
+// لو عايز تهز الفورم لو فيه خطأ:
+if(window.location.search.includes("error")){
+    document.querySelector(".box").classList.add("shake");
+}
+
+// ===== Particles =====
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+let w, h;
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+let particles = Array.from({length: 60}, () => ({
+    x: Math.random()*w,
+    y: Math.random()*h,
+    r: Math.random()*2+1,
+    dx: (Math.random()-.5)*0.4,
+    dy: (Math.random()-.5)*0.4
+}));
+
+function animate(){
+    ctx.clearRect(0,0,w,h);
+    particles.forEach(p=>{
+        p.x+=p.dx;
+        p.y+=p.dy;
+        if(p.x<0||p.x>w) p.dx*=-1;
+        if(p.y<0||p.y>h) p.dy*=-1;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle="#2563eb88";
+        ctx.fill();
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
 
 </body>
 </html>
