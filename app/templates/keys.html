@@ -4,55 +4,73 @@
 <h1>Keys Manager</h1>
 
 {% if role == "admin" %}
-<form action="/keys/generate" method="post">
+<form action="/keys/generate" method="post"
+      style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:15px;">
+
+    <!-- Duration selector -->
+    <select name="days"
+            style="background:#020617;
+                   color:white;
+                   border:1px solid #1e293b;
+                   padding:10px 14px;
+                   border-radius:10px;">
+        <option value="1">1 Day</option>
+        <option value="7">7 Days</option>
+        <option value="30" selected>30 Days</option>
+        <option value="90">90 Days</option>
+        <option value="365">365 Days</option>
+    </select>
+
+    <!-- Generate button -->
     <button class="button">+ Generate Key</button>
 </form>
-<br>
 {% endif %}
 
 <div class="card">
-<table class="pro-table">
-<thead>
-<tr>
-    <th>ID</th>
-    <th>Key</th>
-    <th>Status</th>
-    <th>HWID</th>
-    <th>Days</th>
-    {% if role == "admin" %}<th>Actions</th>{% endif %}
-</tr>
-</thead>
+    <table class="pro-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Key</th>
+                <th>Status</th>
+                <th>HWID</th>
+                <th>Days</th>
+                {% if role == "admin" %}<th>Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for k in keys %}
+            <tr>
+                <td>{{ k.id }}</td>
 
-<tbody>
-{% for k in keys %}
-<tr>
-    <td>{{ k.id }}</td>
-    <td style="font-family:monospace;">{{ k.key }}</td>
+                <td style="font-family:monospace;">
+                    {{ k.key }}
+                </td>
 
-    <td>
-        {% if k.hwid %}
-            <span class="badge green">Bound</span>
-        {% else %}
-            <span class="badge yellow">Free</span>
-        {% endif %}
-    </td>
+                <td>
+                    {% if k.hwid %}
+                        <span class="badge green">Bound</span>
+                    {% else %}
+                        <span class="badge yellow">Free</span>
+                    {% endif %}
+                </td>
 
-    <td>{{ k.hwid or "-" }}</td>
-    <td>{{ k.days }}</td>
+                <td>{{ k.hwid or "-" }}</td>
+                <td>{{ k.days }}</td>
 
-    {% if role == "admin" %}
-    <td>
-        <a href="/keys/delete/{{ k.id }}"
-           class="button"
-           onclick="return confirm('Delete this key?')">
-           Delete
-        </a>
-    </td>
-    {% endif %}
-</tr>
-{% endfor %}
-</tbody>
-</table>
+                {% if role == "admin" %}
+                <td>
+                    <a href="/keys/delete/{{ k.id }}"
+                       class="button"
+                       onclick="return confirm('Delete this key?')">
+                       Delete
+                    </a>
+                </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}
