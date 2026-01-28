@@ -7,7 +7,6 @@
 <title>{{ title or "Control Panel" }}</title>
 
 <style>
-/* ===== Reset ===== */
 body {
     margin: 0;
     font-family: Segoe UI, sans-serif;
@@ -32,7 +31,9 @@ body {
 }
 
 .sidebar a {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: #cbd5e1;
     text-decoration: none;
     padding: 12px;
@@ -43,7 +44,6 @@ body {
 
 .sidebar a:hover {
     background: #1e293b;
-    color: white;
     padding-left: 18px;
 }
 
@@ -51,6 +51,15 @@ body {
     background: #1e293b;
     color: #38bdf8;
     font-weight: bold;
+}
+
+/* SVG Icons */
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
 }
 
 /* ===== Content ===== */
@@ -75,7 +84,7 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,.4);
 }
 
-/* ===== Dashboard Cards Pro ===== */
+/* ===== Dashboard Cards ===== */
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -95,11 +104,6 @@ body {
 
 .stat-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 10px 30px rgba(0,0,0,.4);
-}
-
-.stat-card .icon {
-    font-size: 32px;
 }
 
 .stat-card.blue { border-left: 4px solid #3b82f6; }
@@ -123,7 +127,7 @@ body {
     animation: pulse 0.4s ease;
 }
 
-/* ===== Tables Pro ===== */
+/* ===== Tables ===== */
 .pro-table {
     width: 100%;
     border-collapse: collapse;
@@ -146,10 +150,6 @@ body {
     border-top: 1px solid #1e293b;
 }
 
-.pro-table tr:nth-child(even) {
-    background: #020617;
-}
-
 .pro-table tr:hover {
     background: #1e293b;
 }
@@ -169,7 +169,7 @@ body {
 /* ===== Animations ===== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
@@ -178,7 +178,7 @@ body {
     100% { transform: scale(1); }
 }
 
-/* ===== Responsive + Hamburger ===== */
+/* ===== Responsive ===== */
 .menu-btn {
     display: none;
     background: #1e293b;
@@ -189,27 +189,11 @@ body {
 }
 
 @media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        height: auto;
-        width: 100%;
-        display: none;
-    }
-
-    .sidebar.show {
-        display: block;
-    }
-
-    .menu-btn {
-        display: inline-block;
-    }
-
-    .content {
-        padding: 20px;
-    }
+    body { flex-direction: column; }
+    .sidebar { display: none; width: 100%; height: auto; }
+    .sidebar.show { display: block; }
+    .menu-btn { display: inline-block; }
+    .content { padding: 20px; }
 }
 </style>
 </head>
@@ -217,15 +201,33 @@ body {
 <body>
 
 <div class="sidebar" id="sidebar">
-    <h2>🎮 Rematch</h2>
+    <h2>Rematch</h2>
 
-    <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">🏠 Dashboard</a>
-    <a href="/keys" class="{% if request.path.startswith('/keys') %}active{% endif %}">🔑 Keys</a>
-    <a href="/users" class="{% if request.path.startswith('/users') %}active{% endif %}">👥 Users</a>
-    <a href="/logs" class="{% if request.path.startswith('/logs') %}active{% endif %}">📜 Logs</a>
+    <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg>
+        Dashboard
+    </a>
+
+    <a href="/keys" class="{% if request.path.startswith('/keys') %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="8" cy="12" r="3"/><path d="M11 12h10l-2 2m2-2l-2-2"/></svg>
+        Keys
+    </a>
+
+    <a href="/users" class="{% if request.path.startswith('/users') %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>
+        Users
+    </a>
+
+    <a href="/logs" class="{% if request.path.startswith('/logs') %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+        Logs
+    </a>
 
     <hr style="border-color:#1f2937">
-    <a href="/logout">🚪 Logout</a>
+    <a href="/logout">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        Logout
+    </a>
 </div>
 
 <div class="content">
