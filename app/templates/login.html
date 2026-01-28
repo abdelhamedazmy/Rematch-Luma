@@ -171,7 +171,7 @@ if(location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
 
-// Mouse glow on card
+// Mouse glow
 const card = document.querySelector(".box");
 document.addEventListener("mousemove", e=>{
     const r = card.getBoundingClientRect();
@@ -179,7 +179,7 @@ document.addEventListener("mousemove", e=>{
     card.style.setProperty("--y", `${e.clientY - r.top}px`);
 });
 
-// ===== Particles + Mouse interaction =====
+// ===== Canvas System =====
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 
@@ -191,6 +191,7 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
+// Particles
 const particles = Array.from({length: 90}, () => ({
     x: Math.random()*w,
     y: Math.random()*h,
@@ -199,20 +200,32 @@ const particles = Array.from({length: 90}, () => ({
     dy: (Math.random() - 0.5) * 0.4
 }));
 
+// Mouse
 const mouse = { x: null, y: null };
 window.addEventListener("mousemove", e => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+
+    // add ripple on movement
+    ripples.push({
+        x: mouse.x,
+        y: mouse.y,
+        r: 0,
+        alpha: 0.35
+    });
 });
 window.addEventListener("mouseleave", () => {
     mouse.x = null;
     mouse.y = null;
 });
 
+// Ripples
+const ripples = [];
+
 function animate(){
     ctx.clearRect(0,0,w,h);
 
-    // particles
+    // Particles
     particles.forEach(p=>{
         p.x += p.dx;
         p.y += p.dy;
@@ -226,7 +239,7 @@ function animate(){
         ctx.fill();
     });
 
-    // lines between particles
+    // Lines between particles
     for(let i=0;i<particles.length;i++){
         for(let j=i+1;j<particles.length;j++){
             const a = particles[i];
@@ -246,7 +259,7 @@ function animate(){
         }
     }
 
-    // 🧲 lines to mouse
+    // Lines to mouse
     if(mouse.x && mouse.y){
         particles.forEach(p=>{
             const dx = p.x - mouse.x;
@@ -262,6 +275,23 @@ function animate(){
                 ctx.stroke();
             }
         });
+    }
+
+    // ===== Ripple Effect =====
+    for(let i = ripples.length - 1; i >= 0; i--){
+        const r = ripples[i];
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(120,170,255,${r.alpha})`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        r.r += 1.6;
+        r.alpha -= 0.004;
+
+        if(r.alpha <= 0){
+            ripples.splice(i,1);
+        }
     }
 
     requestAnimationFrame(animate);
