@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <title>Rematch Egypt Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-/* ===== Reset ===== */
 * { box-sizing: border-box; }
 
-/* ===== Body + Background ===== */
 body {
     margin: 0;
     height: 100vh;
@@ -20,32 +19,56 @@ body {
     align-items: center;
 }
 
-/* ===== Particles Canvas ===== */
-#particles {
+/* ===== 3D Animated Background ===== */
+.bg-3d {
     position: fixed;
     inset: 0;
+    background: 
+        linear-gradient(120deg, #2563eb22, transparent),
+        linear-gradient(240deg, #7c3aed22, transparent);
+    animation: moveBg 12s infinite alternate ease-in-out;
     z-index: 0;
 }
 
-/* ===== Splash Screen ===== */
+@keyframes moveBg {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(-80px) translateY(-60px); }
+}
+
+/* ===== Splash ===== */
 #splash {
     position: fixed;
     inset: 0;
     background: #020617;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     z-index: 10;
     animation: splashFade 2s forwards;
 }
+
 #splash img {
-    width: 100px;
+    width: 90px;
+    animation: cinematicLogo 2s ease forwards;
 }
 
 @keyframes splashFade {
-    0% {opacity:1;}
-    70% {opacity:1;}
-    100% {opacity:0; pointer-events:none;}
+    0%,70% { opacity: 1; }
+    100% { opacity: 0; pointer-events: none; }
+}
+
+@keyframes cinematicLogo {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-15deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.05) rotate(0);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* ===== Login Box ===== */
@@ -54,10 +77,10 @@ body {
     z-index: 2;
     width: 360px;
     padding: 35px;
-    background: rgba(2,6,23,0.85);
+    background: rgba(2,6,23,0.9);
     border: 1px solid #1e293b;
     border-radius: 24px;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
     text-align: center;
     color: white;
     animation: fadeUp .6s ease;
@@ -69,9 +92,16 @@ body {
 }
 
 /* ===== Logo ===== */
-.logo img {
+.logo-img {
     width: 90px;
     margin-bottom: 10px;
+    filter: drop-shadow(0 0 15px #2563eb88);
+    transition: .3s ease;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 25px #2563ebcc);
 }
 
 /* ===== Inputs ===== */
@@ -84,11 +114,10 @@ input {
     width: 100%;
     padding: 14px 45px 14px 15px;
     border-radius: 14px;
-    border: none;
     background: #0f172a;
     color: white;
-    outline: none;
     border: 1px solid #1e293b;
+    outline: none;
 }
 
 input:focus {
@@ -105,7 +134,6 @@ input:focus {
     opacity: .6;
     font-size: 14px;
 }
-
 .toggle-pass:hover { opacity: 1; }
 
 /* ===== Button ===== */
@@ -122,8 +150,8 @@ button {
 }
 
 button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(37,99,235,.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(37,99,235,.4);
 }
 
 /* ===== Shake Error ===== */
@@ -139,29 +167,23 @@ button:hover {
 
 /* ===== Mobile ===== */
 @media(max-width:500px){
-    .box {
-        width: 90%;
-        border-radius: 18px;
-    }
+    .box { width: 90%; }
 }
 </style>
 </head>
+
 <body>
+
+<div class="bg-3d"></div>
 
 <!-- Splash -->
 <div id="splash">
-    <img src="/static/img/logo.png" alt="Logo">
+    <img src="/static/img/logo.png">
 </div>
-
-<!-- Particles -->
-<canvas id="particles"></canvas>
 
 <!-- Login -->
 <form class="box" method="post">
-    <div class="logo">
-        <img src="/static/img/logo.png" alt="Logo">
-    </div>
-
+    <img src="/static/img/logo.png" class="logo-img">
     <h2>Rematch Egypt Control Panel</h2>
 
     <div class="input-group">
@@ -177,53 +199,15 @@ button:hover {
 </form>
 
 <script>
-// ===== Show / Hide password =====
 function togglePass(){
     const input = document.getElementById("password");
     input.type = input.type === "password" ? "text" : "password";
 }
 
-// ===== Fake error demo =====
 if(window.location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
-
-// ===== Particles =====
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
-let w, h;
-
-function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-}
-
-window.addEventListener("resize", resize);
-resize();
-
-let particles = Array.from({length: 60}, () => ({
-    x: Math.random()*w,
-    y: Math.random()*h,
-    r: Math.random()*2+1,
-    dx: (Math.random()-.5)*0.4,
-    dy: (Math.random()-.5)*0.4
-}));
-
-function animate(){
-    ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>{
-        p.x+=p.dx;
-        p.y+=p.dy;
-        if(p.x<0||p.x>w) p.dx*=-1;
-        if(p.y<0||p.y>h) p.dy*=-1;
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle="#2563eb88";
-        ctx.fill();
-    });
-    requestAnimationFrame(animate);
-}
-animate();
 </script>
+
 </body>
 </html>
