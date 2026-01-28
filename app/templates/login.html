@@ -18,14 +18,14 @@ body {
     align-items: center;
 }
 
-/* ===== Canvas Background ===== */
+/* Canvas */
 canvas {
     position: fixed;
     inset: 0;
     z-index: 0;
 }
 
-/* ===== Login Card ===== */
+/* Card */
 .box {
     position: relative;
     z-index: 2;
@@ -39,7 +39,7 @@ canvas {
     color: white;
 }
 
-/* Mouse reactive glow */
+/* Mouse glow */
 .box::before {
     content: "";
     position: absolute;
@@ -49,7 +49,7 @@ canvas {
     z-index: -1;
 }
 
-/* ===== Logo ===== */
+/* Logo */
 .logo {
     margin-bottom: 10px;
     animation: logoIntro 1.2s ease;
@@ -76,7 +76,7 @@ canvas {
     to {opacity:1; transform:scale(1) translateY(0); filter:blur(0);}
 }
 
-/* ===== Inputs ===== */
+/* Inputs */
 .input-group {
     margin: 15px 0;
     position: relative;
@@ -90,11 +90,9 @@ input {
     color: white;
     outline: none;
 }
-input:focus {
-    border-color: #3b82f6;
-}
+input:focus { border-color: #3b82f6; }
 
-/* Show/Hide */
+/* Show pass */
 .toggle-pass {
     position: absolute;
     right: 14px;
@@ -106,7 +104,7 @@ input:focus {
 }
 .toggle-pass:hover { opacity: 1; }
 
-/* ===== Button ===== */
+/* Button */
 button {
     width: 100%;
     padding: 14px;
@@ -123,7 +121,7 @@ button:hover {
     box-shadow: 0 10px 35px rgba(37,99,235,.35);
 }
 
-/* ===== Shake ===== */
+/* Shake */
 .shake { animation: shake .4s; }
 @keyframes shake {
     0%,100%{transform:translateX(0)}
@@ -132,7 +130,7 @@ button:hover {
     75%{transform:translateX(-6px)}
 }
 
-/* ===== Mobile ===== */
+/* Mobile */
 @media(max-width:500px){
     .box { width: 92%; padding: 30px; }
 }
@@ -173,7 +171,7 @@ if(location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
 
-// Mouse reactive glow
+// Mouse glow on card
 const card = document.querySelector(".box");
 document.addEventListener("mousemove", e=>{
     const r = card.getBoundingClientRect();
@@ -181,7 +179,7 @@ document.addEventListener("mousemove", e=>{
     card.style.setProperty("--y", `${e.clientY - r.top}px`);
 });
 
-// ===== Particles with connecting lines =====
+// ===== Particles + Mouse interaction =====
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
 
@@ -193,18 +191,28 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-const particles = Array.from({length: 80}, () => ({
+const particles = Array.from({length: 90}, () => ({
     x: Math.random()*w,
     y: Math.random()*h,
-    r: Math.random()*2 + 1.5,
+    r: Math.random()*2 + 1.3,
     dx: (Math.random() - 0.5) * 0.4,
     dy: (Math.random() - 0.5) * 0.4
 }));
 
+const mouse = { x: null, y: null };
+window.addEventListener("mousemove", e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
+window.addEventListener("mouseleave", () => {
+    mouse.x = null;
+    mouse.y = null;
+});
+
 function animate(){
     ctx.clearRect(0,0,w,h);
 
-    // Draw particles
+    // particles
     particles.forEach(p=>{
         p.x += p.dx;
         p.y += p.dy;
@@ -214,11 +222,11 @@ function animate(){
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = "rgba(120,170,255,0.6)";
+        ctx.fillStyle = "rgba(140,180,255,0.7)";
         ctx.fill();
     });
 
-    // Draw lines
+    // lines between particles
     for(let i=0;i<particles.length;i++){
         for(let j=i+1;j<particles.length;j++){
             const a = particles[i];
@@ -228,7 +236,7 @@ function animate(){
             const dist = Math.sqrt(dx*dx + dy*dy);
 
             if(dist < 140){
-                ctx.strokeStyle = `rgba(120,170,255,${0.15 - dist/140 * 0.15})`;
+                ctx.strokeStyle = `rgba(120,170,255,${0.18 - dist/140 * 0.18})`;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
@@ -236,6 +244,24 @@ function animate(){
                 ctx.stroke();
             }
         }
+    }
+
+    // 🧲 lines to mouse
+    if(mouse.x && mouse.y){
+        particles.forEach(p=>{
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist < 180){
+                ctx.strokeStyle = `rgba(180,210,255,${0.35 - dist/180 * 0.35})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(mouse.x, mouse.y);
+                ctx.stroke();
+            }
+        });
     }
 
     requestAnimationFrame(animate);
