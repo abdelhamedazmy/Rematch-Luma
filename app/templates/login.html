@@ -4,116 +4,110 @@
 <meta charset="UTF-8">
 <title>Rematch Egypt Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 * { box-sizing: border-box; }
 
-/* ===== Body ===== */
 body {
     margin: 0;
     height: 100vh;
     font-family: Segoe UI, sans-serif;
-    background: radial-gradient(circle at top, #0b1220, #020617);
+    background: radial-gradient(circle at top, #0f172a, #020617);
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* ===== Particles Canvas ===== */
-#particles {
+/* ===== Animated Stars Background ===== */
+canvas#bg {
     position: fixed;
     inset: 0;
     z-index: 0;
 }
 
-/* ===== Splash ===== */
-#splash {
-    position: fixed;
-    inset: 0;
-    background: #020617;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    letter-spacing: 3px;
-    z-index: 10;
-    animation: splashFade 2s forwards;
-}
-@keyframes splashFade {
-    0% {opacity:1;}
-    70% {opacity:1;}
-    100% {opacity:0; pointer-events:none;}
-}
-
-/* ===== Login Box ===== */
+/* ===== Login Card ===== */
 .box {
     position: relative;
     z-index: 2;
     width: 360px;
     padding: 35px;
-    background: rgba(2,6,23,0.88);
-    border: 1px solid #1e293b;
+    background: rgba(2,6,23,0.7);
+    border: 1px solid rgba(56,189,248,.15);
     border-radius: 26px;
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(18px);
     text-align: center;
     color: white;
-    animation: fadeUp .6s ease;
-    box-shadow:
-        0 0 0 1px #0f172a,
-        0 0 40px rgba(59,130,246,0.08);
+    animation: cinematic 1s ease;
+    box-shadow: 0 0 0 transparent;
 }
 
-@keyframes fadeUp {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
+@keyframes cinematic {
+    from {opacity:0; transform:scale(.92) translateY(30px);}
+    to {opacity:1; transform:scale(1) translateY(0);}
+}
+
+/* ===== Neon animated border ===== */
+.box::before {
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius:26px;
+    background: linear-gradient(120deg,#38bdf8,#6366f1,#22c55e);
+    z-index:-1;
+    filter: blur(12px);
+    animation: glow 6s linear infinite;
+}
+@keyframes glow {
+    0% {filter:blur(12px) hue-rotate(0deg);}
+    100% {filter:blur(12px) hue-rotate(360deg);}
 }
 
 /* ===== Logo ===== */
-.logo {
-    font-size: 38px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    letter-spacing: 2px;
-    text-shadow:
-        0 0 10px rgba(59,130,246,0.4),
-        0 0 30px rgba(59,130,246,0.15);
+.logo-wrap {
+    position: relative;
+    display: inline-block;
+    animation: logoEnter 1.2s ease;
+}
+@keyframes logoEnter {
+    from {opacity:0; transform:scale(.6) translateY(-30px);}
+    to {opacity:1; transform:scale(1);}
+}
+.logo-wrap img {
+    width: 90px;
+    filter: drop-shadow(0 0 25px rgba(56,189,248,.6));
+}
+.logo-reflect {
+    width: 90px;
+    transform: scaleY(-1);
+    opacity: .2;
+    filter: blur(2px);
+    margin-top: -10px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.4), transparent);
 }
 
 /* ===== Inputs ===== */
-.input-group {
-    position: relative;
-    margin: 15px 0;
-}
-
+.input-group { margin: 14px 0; position: relative; }
 input {
     width: 100%;
     padding: 14px 45px 14px 15px;
     border-radius: 14px;
-    border: none;
-    background: #0b1220;
+    background: #0f172a;
+    border: 1px solid #1e293b;
     color: white;
     outline: none;
-    border: 1px solid #1e293b;
-    transition: .2s ease;
 }
+input:focus { border-color: #38bdf8; }
 
-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-}
-
-/* ===== Show Password ===== */
 .toggle-pass {
     position: absolute;
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    opacity: .5;
-    font-size: 13px;
+    opacity: .6;
 }
-.toggle-pass:hover { opacity: 1; }
+.toggle-pass:hover {opacity:1}
 
 /* ===== Button ===== */
 button {
@@ -121,46 +115,52 @@ button {
     padding: 14px;
     border-radius: 16px;
     border: none;
-    background: linear-gradient(135deg, #1e40af, #2563eb);
+    background: linear-gradient(90deg,#2563eb,#6366f1);
     color: white;
-    font-weight: 600;
-    letter-spacing: .5px;
+    font-weight: bold;
     cursor: pointer;
     transition: .2s ease;
 }
-
 button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 30px rgba(37,99,235,.25);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(99,102,241,.4);
 }
 
-/* ===== Shake Error ===== */
-.shake { animation: shake .4s; }
+/* ===== Blur transition on submit ===== */
+.blur-out {
+    animation: blurOut .5s forwards;
+}
+@keyframes blurOut {
+    to {filter: blur(6px); opacity:.3;}
+}
+
+/* ===== Shake ===== */
+.shake {animation: shake .4s;}
 @keyframes shake {
-    0% {transform:translateX(0);}
-    25% {transform:translateX(-6px);}
-    50% {transform:translateX(6px);}
-    75% {transform:translateX(-6px);}
-    100% {transform:translateX(0);}
+    0%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    50%{transform:translateX(6px);}
+    75%{transform:translateX(-6px);}
+    100%{transform:translateX(0);}
 }
 
-/* ===== Mobile ===== */
+/* Mobile */
 @media(max-width:500px){
-    .box {
-        width: 92%;
-        border-radius: 20px;
-    }
+    .box {width:90%;}
 }
 </style>
 </head>
 <body>
 
-<div id="splash">R/M</div>
-<canvas id="particles"></canvas>
+<canvas id="bg"></canvas>
 
-<form class="box" method="post">
-    <div class="logo">R/M</div>
-    <h2 style="font-weight:600; opacity:.9;">Rematch Egypt Control Panel</h2>
+<form class="box" method="post" onsubmit="playLogin()">
+    <div class="logo-wrap">
+        <img src="/static/img/logo.png">
+        <img src="/static/img/logo.png" class="logo-reflect">
+    </div>
+
+    <h2>Rematch Egypt Control Panel</h2>
 
     <div class="input-group">
         <input name="username" placeholder="Username" required>
@@ -168,57 +168,58 @@ button:hover {
 
     <div class="input-group">
         <input id="password" name="password" type="password" placeholder="Password" required>
-        <span class="toggle-pass" onclick="togglePass()">Show</span>
+        <span class="toggle-pass" onclick="togglePass()">👁</span>
     </div>
 
     <button>Login</button>
 </form>
 
+<audio id="sound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+
 <script>
+// Show / Hide
 function togglePass(){
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+    const p = document.getElementById("password");
+    p.type = p.type === "password" ? "text" : "password";
 }
 
-if(window.location.search.includes("error")){
+// Blur + Sound on submit
+function playLogin(){
+    document.querySelector(".box").classList.add("blur-out");
+    document.getElementById("sound").play();
+}
+
+// Shake demo (لو فيه ?error في الرابط)
+if(location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
 
-/* ===== Particles ===== */
-const canvas = document.getElementById("particles");
+// ===== Parallax Stars Background =====
+const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
-let w, h;
+let w,h;
+function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight;}
+window.onresize=resize;resize();
 
-function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resize);
-resize();
-
-let particles = Array.from({length: 70}, () => ({
-    x: Math.random()*w,
-    y: Math.random()*h,
-    r: Math.random()*1.8+0.5,
-    dx: (Math.random()-.5)*0.3,
-    dy: (Math.random()-.5)*0.3
+let stars = Array.from({length:120},()=>({
+    x:Math.random()*w,
+    y:Math.random()*h,
+    z:Math.random()*2+0.2
 }));
 
 function animate(){
     ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>{
-        p.x+=p.dx;
-        p.y+=p.dy;
-        if(p.x<0||p.x>w) p.dx*=-1;
-        if(p.y<0||p.y>h) p.dy*=-1;
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle="rgba(59,130,246,0.35)";
-        ctx.fill();
+    stars.forEach(s=>{
+        s.y += s.z;
+        if(s.y>h) s.y=0;
+        ctx.fillStyle="#38bdf8";
+        ctx.globalAlpha=s.z/2;
+        ctx.fillRect(s.x,s.y,2,2);
     });
     requestAnimationFrame(animate);
 }
 animate();
 </script>
+
 </body>
 </html>
