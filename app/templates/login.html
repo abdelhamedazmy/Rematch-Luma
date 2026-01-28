@@ -5,41 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* ===== Animated Background ===== */
 body {
-    height:100vh;
-    margin:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-family:Segoe UI, sans-serif;
-    background:
-        linear-gradient(-45deg, #0f172a, #020617, #1e293b, #020617);
+    margin: 0;
+    height: 100vh;
+    font-family: Segoe UI, sans-serif;
+    background: linear-gradient(-45deg, #020617, #0f172a, #020617, #111827);
     background-size: 400% 400%;
-    animation: gradient 12s ease infinite;
+    animation: bgMove 12s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes bgMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
 }
 
-/* ===== Login Box ===== */
 .box {
-    background: rgba(0,0,0,.78);
-    backdrop-filter: blur(6px);
-    padding:32px;
-    border-radius:22px;
-    width:320px;
-    color:white;
-    text-align:center;
-    animation: fade .6s ease, glow 3s infinite alternate;
-}
-
-@keyframes glow {
-    from { box-shadow: 0 0 0 rgba(56,189,248,0.15); }
-    to   { box-shadow: 0 0 28px rgba(56,189,248,0.25); }
+    width: 360px;
+    background: rgba(2,6,23,0.88);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 22px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
+    animation: fade .6s ease;
 }
 
 @keyframes fade {
@@ -47,141 +40,75 @@ body {
     to {opacity:1; transform:translateY(0)}
 }
 
-/* ===== Inputs ===== */
-.input-group {
-    position: relative;
+.logo {
+    width: 80px;
+    margin-bottom: 10px;
 }
 
-input {
-    width:100%;
-    height:44px;
-    padding:8px 14px;
-    margin:8px 0;
-    border-radius:12px;
-    border:1px solid transparent;
-    font-size:14.5px;
-    background:#f1f5f9;
-    outline:none;
-    transition:.2s ease;
+h2 {
+    margin-bottom: 25px;
+    font-weight: 600;
 }
 
-input:focus {
-    border:1px solid #38bdf8;
-    box-shadow: 0 0 0 2px rgba(56,189,248,.2);
+.field {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    padding: 0 16px;
+    margin-bottom: 14px;
+    font-size: 15px;
+    background: #f1f5f9;
+    box-sizing: border-box;
 }
 
-/* Show password */
-.toggle-pass {
-    position:absolute;
-    right:12px;
-    top:50%;
-    transform:translateY(-50%);
-    cursor:pointer;
-    font-size:12px;
-    color:#64748b;
+.field:focus {
+    outline: 2px solid #2563eb;
 }
 
-/* ===== Button ===== */
-button {
-    width:100%;
-    height:46px;
-    margin-top:14px;
-    border-radius:14px;
-    border:none;
-    background:#2563eb;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.2s ease;
+.button {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
-button:hover {
-    background:#1d4ed8;
-    transform:translateY(-1px);
+.button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(37,99,235,.4);
 }
 
-button.loading {
-    opacity:.7;
-    pointer-events:none;
+.button:active {
+    transform: scale(.97);
 }
 
-/* ===== Messages ===== */
-.message {
-    margin-top:10px;
-    font-size:13px;
-    display:none;
-}
-
-.error { color:#f87171; }
-.success { color:#4ade80; }
-
-/* ================================================= */
-/* =============== MOBILE DESIGN =================== */
-/* ================================================= */
-@media(max-width:600px){
-    body {
-        align-items:flex-end;
-        padding-bottom:30px;
-    }
-
+/* موبايل */
+@media (max-width: 480px) {
     .box {
-        width:100%;
-        max-width:100%;
-        border-radius:26px 26px 0 0;
-        padding:28px 22px;
-        animation:none;
-        box-shadow:none;
-    }
-
-    .box img {
-        width:65px;
-    }
-
-    h2 {
-        font-size:18px;
-    }
-
-    input, button {
-        height:48px;
-        font-size:15px;
+        width: 90%;
+        padding: 30px;
     }
 }
 </style>
 </head>
+
 <body>
 
-<form class="box" method="post" onsubmit="startLoading()">
-    <img src="/static/img/logo.png" width="75"><br><br>
+<form class="box" method="post">
+    <img src="/static/img/logo.png" class="logo">
+    <h2>Rematch Egypt Control Panel</h2>
 
-    <h2 style="margin-bottom:18px;">Rematch Egypt Control Panel</h2>
+    <input class="field" name="username" placeholder="Username" required>
+    <input class="field" name="password" type="password" placeholder="Password" required>
 
-    <div class="input-group">
-        <input name="username" placeholder="Username" required>
-    </div>
-
-    <div class="input-group">
-        <input id="password" name="password" type="password" placeholder="Password" required>
-        <span class="toggle-pass" onclick="togglePass()">Show</span>
-    </div>
-
-    <button id="loginBtn">Login</button>
-
-    <div id="error" class="message error">Invalid credentials</div>
-    <div id="success" class="message success">Login successful...</div>
+    <button class="button">Login</button>
 </form>
-
-<script>
-function togglePass() {
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
-}
-
-function startLoading() {
-    const btn = document.getElementById("loginBtn");
-    btn.classList.add("loading");
-    btn.innerText = "Logging in...";
-}
-</script>
 
 </body>
 </html>
