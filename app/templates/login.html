@@ -1,234 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Rematch Egypt Control Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    height: 100vh;
-    font-family: Segoe UI, sans-serif;
-    background: radial-gradient(circle at top, #05080f, #000);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ===== Stars Canvas ===== */
-#stars {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-}
-
-/* ===== Particles Canvas (new layer) ===== */
-#particles {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* ===== Login Card ===== */
-.box {
-    position: relative;
-    z-index: 2;
-    width: 360px;
-    padding: 38px;
-    background: rgba(8, 12, 22, 0.78);
-    border: 1px solid rgba(255,255,255,.05);
-    border-radius: 26px;
-    backdrop-filter: blur(18px);
-    text-align: center;
-    color: white;
-    transition: box-shadow .3s ease;
-}
-
-/* Mouse reactive glow */
-.box::before {
-    content: "";
-    position: absolute;
-    inset: -2px;
-    background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(80,120,255,.25), transparent 60%);
-    border-radius: 28px;
-    z-index: -1;
-}
-
-/* ===== Logo ===== */
-.logo {
-    position: relative;
-    margin-bottom: 10px;
-    animation: logoIntro 1.2s ease;
-}
-.logo img {
-    width: 80px;
-    filter: drop-shadow(0 0 12px rgba(120,150,255,.35));
-}
-
-/* Reflection */
-.logo::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    width: 80px;
-    height: 40px;
-    transform: translateX(-50%) scaleY(-1);
-    background: url("/static/img/logo.png") center/contain no-repeat;
-    opacity: .08;
-    filter: blur(2px);
-}
-
-@keyframes logoIntro {
-    from {opacity:0; transform:scale(.8) translateY(-20px); filter:blur(8px);}
-    to {opacity:1; transform:scale(1) translateY(0); filter:blur(0);}
-}
-
-/* ===== Inputs ===== */
-.input-group {
-    margin: 15px 0;
-    position: relative;
-}
-input {
-    width: 100%;
-    padding: 14px 44px 14px 16px;
-    border-radius: 16px;
-    background: #05080f;
-    border: 1px solid #111827;
-    color: white;
-    outline: none;
-}
-input:focus {
-    border-color: #3b82f6;
-}
-
-/* Show/Hide */
-.toggle-pass {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 13px;
-    opacity: .6;
-    cursor: pointer;
-}
-.toggle-pass:hover { opacity: 1; }
-
-/* ===== Button ===== */
-button {
-    width: 100%;
-    padding: 14px;
-    border-radius: 18px;
-    border: none;
-    background: linear-gradient(90deg, #1e3a8a, #2563eb);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: .25s ease;
-}
-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 35px rgba(37,99,235,.35);
-}
-
-/* ===== Shake ===== */
-.shake { animation: shake .4s; }
-@keyframes shake {
-    0%,100%{transform:translateX(0)}
-    25%{transform:translateX(-6px)}
-    50%{transform:translateX(6px)}
-    75%{transform:translateX(-6px)}
-}
-
-/* ===== Mobile ===== */
-@media(max-width:500px){
-    .box { width: 92%; padding: 30px; }
-}
-</style>
-</head>
-
-<body>
-
-<canvas id="stars"></canvas>
-<canvas id="particles"></canvas>
-
-<form class="box" method="post">
-    <div class="logo">
-        <img src="/static/img/logo.png">
-    </div>
-
-    <h2 style="margin-bottom:25px;font-weight:600;">Rematch Egypt Control Panel</h2>
-
-    <div class="input-group">
-        <input name="username" placeholder="Username" required>
-    </div>
-
-    <div class="input-group">
-        <input id="password" name="password" type="password" placeholder="Password" required>
-        <span class="toggle-pass" onclick="togglePass()">Show</span>
-    </div>
-
-    <button>Login</button>
-</form>
-
 <script>
-// Show / Hide
-function togglePass(){
-    const i = document.getElementById("password");
-    i.type = i.type === "password" ? "text" : "password";
-}
-
-// Shake demo
-if(location.search.includes("error")){
-    document.querySelector(".box").classList.add("shake");
-}
-
-// Mouse reactive glow
-const card = document.querySelector(".box");
-document.addEventListener("mousemove", e=>{
-    const r = card.getBoundingClientRect();
-    card.style.setProperty("--x", `${e.clientX - r.left}px`);
-    card.style.setProperty("--y", `${e.clientY - r.top}px`);
-});
-
-
-// ===== Stars =====
-const starsCanvas = document.getElementById("stars");
-const sctx = starsCanvas.getContext("2d");
-
-let sw, sh;
-function resizeStars(){
-    sw = starsCanvas.width = innerWidth;
-    sh = starsCanvas.height = innerHeight;
-}
-resizeStars();
-addEventListener("resize", resizeStars);
-
-const stars = Array.from({length:120},()=>({
-    x:Math.random()*sw,
-    y:Math.random()*sh,
-    z:Math.random()*1.5+0.2
-}));
-
-function drawStars(){
-    sctx.clearRect(0,0,sw,sh);
-    stars.forEach(s=>{
-        s.y += s.z * 0.3;
-        if(s.y > sh){ s.y = 0; s.x = Math.random()*sw; }
-        sctx.fillStyle = "rgba(120,150,255,.6)";
-        sctx.fillRect(s.x, s.y, s.z, s.z);
-    });
-    requestAnimationFrame(drawStars);
-}
-drawStars();
-
-
-// ===== Particles (soft layer) =====
+// ===== Particles (enhanced with lines) =====
 const pCanvas = document.getElementById("particles");
 const pctx = pCanvas.getContext("2d");
 
@@ -240,30 +11,52 @@ function resizeParticles(){
 resizeParticles();
 addEventListener("resize", resizeParticles);
 
-const particles = Array.from({length: 50}, () => ({
+const particles = Array.from({length: 70}, () => ({
     x: Math.random()*pw,
     y: Math.random()*ph,
-    r: Math.random()*2+0.5,
-    dx: (Math.random()-.5)*0.3,
-    dy: (Math.random()-.5)*0.3
+    r: Math.random()*2 + 1.2,   // أكبر شوية
+    dx: (Math.random()-.5)*0.35,
+    dy: (Math.random()-.5)*0.35
 }));
 
 function drawParticles(){
     pctx.clearRect(0,0,pw,ph);
+
+    // رسم البارتكلز
     particles.forEach(p=>{
         p.x += p.dx;
         p.y += p.dy;
-        if(p.x<0||p.x>pw) p.dx*=-1;
-        if(p.y<0||p.y>ph) p.dy*=-1;
+
+        if(p.x < 0 || p.x > pw) p.dx *= -1;
+        if(p.y < 0 || p.y > ph) p.dy *= -1;
 
         pctx.beginPath();
-        pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        pctx.fillStyle = "rgba(80,120,255,.15)";
+        pctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        pctx.fillStyle = "rgba(120,170,255,0.45)"; // أوضح
         pctx.fill();
     });
+
+    // رسم الخطوط بينهم
+    for(let i=0;i<particles.length;i++){
+        for(let j=i+1;j<particles.length;j++){
+            const a = particles[i];
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist < 130){ // مدى الاتصال
+                pctx.strokeStyle = `rgba(120,170,255,${0.12 - dist/130 * 0.12})`;
+                pctx.lineWidth = 1;
+                pctx.beginPath();
+                pctx.moveTo(a.x, a.y);
+                pctx.lineTo(b.x, b.y);
+                pctx.stroke();
+            }
+        }
+    }
+
     requestAnimationFrame(drawParticles);
 }
 drawParticles();
 </script>
-</body>
-</html>
