@@ -1,162 +1,341 @@
-from flask import Blueprint, render_template, session, redirect, request, jsonify
-from .db import get_db, add_log
-import uuid
-main_bp = Blueprint("main", __name__)
-# ================= Helpers =================
-def login_required():
-    return session.get("user")
-def admin_required():
-    return session.get("role") == "admin"
-def get_ip():
-    return request.headers.get("X-Forwarded-For", request.remote_addr)
-# ================= Home =================
-@main_bp.route("/")
-def home():
-    return redirect("/dashboard")
-# ================= Dashboard =================
-@main_bp.route("/dashboard")
-def dashboard():
-    if not login_required():
-        return redirect("/login")
-    db = get_db()
-    users_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-    keys_count = db.execute("SELECT COUNT(*) FROM keys").fetchone()[0]
-    active_keys = db.execute("SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL").fetchone()[0]
-    return render_template(
-        "dashboard.html",
-        title="Rematch Egypt Control Panel",
-        user=session["user"],
-        role=session["role"],
-        users_count=users_count,
-        keys_count=keys_count,
-        active_keys=active_keys
-    )
-# ================= Keys Page =================
-@main_bp.route("/keys")
-def keys():
-    if not login_required():
-        return redirect("/login")
-    db = get_db()
-    keys = db.execute("SELECT * FROM keys").fetchall()
-    return render_template("keys.html", keys=keys, role=session["role"])
-# ================= Generate Key (Admin only) =================
-@main_bp.route("/keys/generate", methods=["GET", "POST"])
-def generate_key():
-    if not login_required():
-        return redirect("/login")
-    if not admin_required():
-        return "Forbidden", 403
-    new_key = str(uuid.uuid4())[:10].upper()
-    db = get_db()
-    db.execute(
-        "INSERT INTO keys (key, hwid, days) VALUES (?, ?, ?)",
-        (new_key, None, 30)
-    )
-    db.commit()
-    # LOG
-    add_log(session["user"], f"Generated key: {new_key}", get_ip())
-    return redirect("/keys")
-# ================= Delete Key (Admin only) =================
-@main_bp.route("/keys/delete/<int:key_id>")
-def delete_key(key_id):
-    if not login_required():
-        return redirect("/login")
-    if not admin_required():
-        return "Forbidden", 403
-    db = get_db()
-    key_row = db.execute("SELECT key FROM keys WHERE id = ?", (key_id,)).fetchone()
-    if key_row:
-        add_log(session["user"], f"Deleted key: {key_row['key']}", get_ip())
-    db.execute("DELETE FROM keys WHERE id = ?", (key_id,))
-    db.commit()
-    return redirect("/keys")
-# ================= API FOR EXE =================
-@main_bp.route("/check", methods=["POST"])
-def api_check():
-    data = request.get_json()
-    if not data:
-        return jsonify({"status": "error", "message": "No data"}), 400
-    key = data.get("key")
-    hwid = data.get("hwid")
-    if not key or not hwid:
-        return jsonify({"status": "error", "message": "Missing key or hwid"}), 400
-    db = get_db()
-    row = db.execute("SELECT * FROM keys WHERE key = ?", (key,)).fetchone()
-    # Key مش موجود
-    if not row:
-        add_log("API", f"Invalid key attempt: {key}", get_ip())
-        return jsonify({"status": "invalid"})
-    # أول استخدام → اربط HWID
-    if row["hwid"] is None:
-        db.execute("UPDATE keys SET hwid = ? WHERE id = ?", (hwid, row["id"]))
-        db.commit()
-        add_log("API", f"Key bound: {key} → {hwid}", get_ip())
-        return jsonify({"status": "bound"})
-    # نفس الجهاز
-    if row["hwid"] == hwid:
-        add_log("API", f"Key OK: {key}", get_ip())
-        return jsonify({"status": "ok"})
-    # جهاز مختلف
-    add_log("API", f"Blocked key: {key} (HWID mismatch)", get_ip())
-    return jsonify({"status": "blocked"})
-# ================= Users Management =================
-@main_bp.route("/users")
-def users_page():
-    if not login_required():
-        return redirect("/login")
-    if not admin_required():
-        return "Forbidden", 403
-    db = get_db()
-    users = db.execute("SELECT * FROM users").fetchall()
-    return render_template("users.html", users=users)
-@main_bp.route("/users/create", methods=["POST"])
-def create_user():
-    if not login_required() or not admin_required():
-        return "Forbidden", 403
-    username = request.form.get("username")
-    password = request.form.get("password")
-    role = request.form.get("role")
-    if not username or not password or not role:
-        return redirect("/users")
-    db = get_db()
-    try:
-        db.execute(
-            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            (username, password, role)
-        )
-        db.commit()
-    except:
-        pass  # لو اليوزر موجود بالفعل
-    return redirect("/users")
-@main_bp.route("/users/delete/<int:user_id>")
-def delete_user(user_id):
-    if not login_required() or not admin_required():
-        return "Forbidden", 403
-    db = get_db()
-    db.execute("DELETE FROM users WHERE id = ?", (user_id,))
-    db.commit()
-    return redirect("/users")
-@main_bp.route("/users/toggle_role/<int:user_id>")
-def toggle_role(user_id):
-    if not login_required() or not admin_required():
-        return "Forbidden", 403
-    db = get_db()
-    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-    if not user:
-        return redirect("/users")
-    new_role = "admin" if user["role"] == "viewer" else "viewer"
-    db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
-    db.commit()
-    return redirect("/users")
-# ================= Logs Viewer (Admin only) =================
-@main_bp.route("/logs")
-def logs_page():
-    if not login_required():
-        return redirect("/login")
-    if not admin_required():
-        return "Forbidden", 403
-    db = get_db()
-    logs = db.execute(
-        "SELECT * FROM logs ORDER BY id DESC"
-    ).fetchall()
-    return render_template("logs.html", logs=logs)
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title or "Control Panel" }}</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Segoe UI, sans-serif;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* ===== Light Theme ===== */
+body.light {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+body.light .sidebar { background: #e2e8f0; }
+body.light .card,
+body.light .stat-card,
+body.light .pro-table { background: #ffffff; border-color: #e5e7eb; }
+
+body.light .sidebar a { color: #1e293b; }
+body.light .sidebar a.active { background: #dbeafe; }
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 240px;
+    background: #020617;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: 0.3s ease;
+}
+
+.sidebar h2 {
+    color: #38bdf8;
+    margin-bottom: 30px;
+}
+
+.sidebar a, .theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 15px;
+}
+
+.sidebar a:hover, .theme-btn:hover {
+    background: #1e293b;
+    padding-left: 18px;
+}
+
+.sidebar a.active {
+    background: #1e293b;
+    color: #38bdf8;
+    font-weight: bold;
+}
+
+/* SVG Icons */
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* ===== Content ===== */
+.content {
+    flex: 1;
+    padding: 40px;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* ===== Cards ===== */
+.card {
+    background: #020617;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #1e293b;
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+
+/* ===== Dashboard Cards ===== */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 20px;
+    border-radius: 20px;
+    background: #020617;
+    border: 1px solid #1e293b;
+    transition: 0.2s ease;
+}
+
+.stat-card:hover { transform: translateY(-6px); }
+
+.stat-card.blue { border-left: 4px solid #3b82f6; }
+.stat-card.purple { border-left: 4px solid #a855f7; }
+.stat-card.green { border-left: 4px solid #22c55e; }
+
+/* ===== Buttons ===== */
+.button {
+    background: #2563eb;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.button:hover {
+    background: #1d4ed8;
+    animation: pulse 0.4s ease;
+}
+
+/* ===== Tables ===== */
+.pro-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #020617;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.pro-table th {
+    position: sticky;
+    top: 0;
+    background: #020617;
+    padding: 14px;
+    text-align: left;
+    color: #38bdf8;
+}
+
+.pro-table td {
+    padding: 14px;
+    border-top: 1px solid #1e293b;
+}
+
+.pro-table tr:hover { background: #1e293b; }
+
+/* ===== Badges ===== */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.red { background: #dc2626; }
+.blue { background: #2563eb; }
+.green { background: #16a34a; }
+.yellow { background: #ca8a04; }
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* ===== Responsive ===== */
+.menu-btn {
+    display: none;
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    .sidebar { display: none; width: 100%; height: auto; }
+    .sidebar.show { display: block; }
+    .menu-btn { display: inline-block; }
+    .content { padding: 20px; }
+}
+
+/* ===== Loading Bar ===== */
+#loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    z-index: 9999;
+    transition: width 0.3s ease;
+}
+
+/* ===== Toast ===== */
+#toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #020617;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: 1px solid #1e293b;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-success { border-left: 4px solid #22c55e; }
+.toast-error { border-left: 4px solid #dc2626; }
+.toast-info { border-left: 4px solid #3b82f6; }
+</style>
+</head>
+
+<body>
+
+<div id="loading-bar"></div>
+<div id="toast"></div>
+
+<div class="sidebar" id="sidebar">
+    <h2>Rematch</h2>
+
+    <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="/keys" class="{% if request.path.startswith('/keys') %}active{% endif %}">Keys</a>
+    <a href="/users" class="{% if request.path.startswith('/users') %}active{% endif %}">Users</a>
+    <a href="/logs" class="{% if request.path.startswith('/logs') %}active{% endif %}">Logs</a>
+
+    <button class="theme-btn" onclick="toggleTheme()">🌗 Toggle Theme</button>
+
+    <hr style="border-color:#1f2937">
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="content">
+    <div class="menu-btn" onclick="toggleMenu()">☰ Menu</div>
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("show");
+}
+
+// Loading bar
+document.addEventListener("DOMContentLoaded", () => {
+    const bar = document.getElementById("loading-bar");
+    bar.style.width = "30%";
+
+    window.addEventListener("load", () => {
+        bar.style.width = "100%";
+        setTimeout(() => bar.style.opacity = "0", 400);
+    });
+});
+
+// Toast
+function showToast(message, type="info") {
+    const toast = document.getElementById("toast");
+    toast.className = "";
+    toast.classList.add(type === "success" ? "toast-success" :
+                        type === "error" ? "toast-error" : "toast-info");
+    toast.innerText = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// Theme toggle
+function toggleTheme() {
+    document.body.classList.toggle("light");
+    localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light");
+    }
+});
+
+// Animated Counters
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".counter").forEach(counter => {
+        const target = +counter.dataset.target;
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 60));
+
+        const update = () => {
+            current += step;
+            if (current >= target) {
+                counter.innerText = target;
+            } else {
+                counter.innerText = current;
+                requestAnimationFrame(update);
+            }
+        };
+
+        update();
+    });
+});
+</script>
+
+</body>
+</html>
