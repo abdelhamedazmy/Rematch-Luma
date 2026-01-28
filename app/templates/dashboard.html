@@ -5,24 +5,36 @@
 
 <div class="cards-grid">
 
+  <!-- Users -->
   <div class="stat-card blue">
-    <div class="icon">👥</div>
+    <svg class="icon" viewBox="0 0 24 24">
+      <circle cx="12" cy="7" r="4"/>
+      <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+    </svg>
     <div>
       <p>Users</p>
       <h2>{{ users_count }}</h2>
     </div>
   </div>
 
+  <!-- Keys -->
   <div class="stat-card purple">
-    <div class="icon">🔑</div>
+    <svg class="icon" viewBox="0 0 24 24">
+      <circle cx="8" cy="12" r="3"/>
+      <path d="M11 12h10l-2 2m2-2l-2-2"/>
+    </svg>
     <div>
       <p>Keys</p>
       <h2>{{ keys_count }}</h2>
     </div>
   </div>
 
+  <!-- Devices -->
   <div class="stat-card green">
-    <div class="icon">🖥</div>
+    <svg class="icon" viewBox="0 0 24 24">
+      <rect x="2" y="4" width="20" height="14" rx="2"/>
+      <path d="M8 22h8"/>
+    </svg>
     <div>
       <p>Devices</p>
       <h2>{{ active_keys }}</h2>
