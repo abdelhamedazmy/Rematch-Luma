@@ -17,13 +17,16 @@
 
 <div class="card">
 <table class="pro-table">
+<thead>
 <tr>
     <th>ID</th>
     <th>Username</th>
     <th>Role</th>
     <th>Actions</th>
 </tr>
+</thead>
 
+<tbody>
 {% for u in users %}
 <tr>
     <td>{{ u.id }}</td>
@@ -37,12 +40,21 @@
         {% endif %}
     </td>
 
-    <td>
-        <a href="/users/toggle_role/{{ u.id }}" class="button">Toggle</a>
-        <a href="/users/delete/{{ u.id }}" class="button">Delete</a>
+    <td style="display:flex;gap:8px;">
+        <a href="/users/toggle_role/{{ u.id }}"
+           class="button">
+           Toggle
+        </a>
+
+        <a href="/users/delete/{{ u.id }}"
+           class="button"
+           onclick="return confirm('Delete this user?')">
+           Delete
+        </a>
     </td>
 </tr>
 {% endfor %}
+</tbody>
 </table>
 </div>
 
