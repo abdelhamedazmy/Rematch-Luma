@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Dashboard</h1>
+<h1 style="margin-bottom:25px;">Dashboard</h1>
 
 <div class="cards-grid">
 
@@ -11,9 +11,10 @@
       <circle cx="12" cy="7" r="4"/>
       <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
     </svg>
+
     <div>
-      <p>Users</p>
-      <h2>{{ users_count }}</h2>
+      <p style="opacity:.7;margin:0;">Total Users</p>
+      <h2 class="counter" data-target="{{ users_count }}">0</h2>
     </div>
   </div>
 
@@ -23,9 +24,10 @@
       <circle cx="8" cy="12" r="3"/>
       <path d="M11 12h10l-2 2m2-2l-2-2"/>
     </svg>
+
     <div>
-      <p>Keys</p>
-      <h2>{{ keys_count }}</h2>
+      <p style="opacity:.7;margin:0;">Total Keys</p>
+      <h2 class="counter" data-target="{{ keys_count }}">0</h2>
     </div>
   </div>
 
@@ -35,9 +37,10 @@
       <rect x="2" y="4" width="20" height="14" rx="2"/>
       <path d="M8 22h8"/>
     </svg>
+
     <div>
-      <p>Devices</p>
-      <h2>{{ active_keys }}</h2>
+      <p style="opacity:.7;margin:0;">Active Devices</p>
+      <h2 class="counter" data-target="{{ active_keys }}">0</h2>
     </div>
   </div>
 
