@@ -1,15 +1,20 @@
 from flask import Blueprint, render_template, session, redirect, request, jsonify, Response
 from .db import get_db, add_log
-import uuid, time, json
+import uuid
+import time
+import json
 
 main_bp = Blueprint("main", __name__)
+
 
 # ================= Helpers =================
 def login_required():
     return session.get("user")
 
+
 def admin_required():
     return session.get("role") == "admin"
+
 
 def get_ip():
     return request.headers.get("X-Forwarded-For", request.remote_addr)
@@ -30,7 +35,9 @@ def dashboard():
     db = get_db()
     users_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     keys_count = db.execute("SELECT COUNT(*) FROM keys").fetchone()[0]
-    active_keys = db.execute("SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL").fetchone()[0]
+    active_keys = db.execute(
+        "SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL"
+    ).fetchone()[0]
 
     return render_template(
         "dashboard.html",
@@ -52,10 +59,11 @@ def live_stats():
     def stream():
         while True:
             db = get_db()
-
             users = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
             keys = db.execute("SELECT COUNT(*) FROM keys").fetchone()[0]
-            active = db.execute("SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL").fetchone()[0]
+            active = db.execute(
+                "SELECT COUNT(*) FROM keys WHERE hwid IS NOT NULL"
+            ).fetchone()[0]
 
             data = json.dumps({
                 "users": users,
@@ -64,7 +72,7 @@ def live_stats():
             })
 
             yield f"data: {data}\n\n"
-            time.sleep(2)  # تحديث كل ثانيتين
+            time.sleep(2)
 
     return Response(stream(), mimetype="text/event-stream")
 
@@ -76,26 +84,42 @@ def keys():
         return redirect("/login")
 
     db = get_db()
-    keys = db.execute("SELECT * FROM keys ORDER BY id DESC").fetchall()
+    keys = db.execute(
+        "SELECT * FROM keys ORDER BY id DESC"
+    ).fetchall()
+
     return render_template("keys.html", keys=keys, role=session["role"])
 
 
-# ================= Generate Key (Admin only) =================
+# ================= Generate Key =================
 @main_bp.route("/keys/generate", methods=["POST"])
 def generate_key():
     if not login_required() or not admin_required():
         return "Forbidden", 403
+
+    # 👇 قراءة مدة الصلاحية من الفورم
+    days = request.form.get("days", 30)
+
+    try:
+        days = int(days)
+    except:
+        days = 30
 
     new_key = str(uuid.uuid4())[:10].upper()
     db = get_db()
 
     db.execute(
         "INSERT INTO keys (key, hwid, days) VALUES (?, ?, ?)",
-        (new_key, None, 30)
+        (new_key, None, days)
     )
     db.commit()
 
-    add_log(session["user"], f"Generated key: {new_key}", get_ip())
+    add_log(
+        session["user"],
+        f"Generated key: {new_key} ({days} days)",
+        get_ip()
+    )
+
     return redirect("/keys")
 
 
@@ -106,7 +130,10 @@ def delete_key(key_id):
         return "Forbidden", 403
 
     db = get_db()
-    key_row = db.execute("SELECT key FROM keys WHERE id = ?", (key_id,)).fetchone()
+    key_row = db.execute(
+        "SELECT key FROM keys WHERE id = ?",
+        (key_id,)
+    ).fetchone()
 
     if key_row:
         add_log(session["user"], f"Deleted key: {key_row['key']}", get_ip())
@@ -121,6 +148,7 @@ def delete_key(key_id):
 @main_bp.route("/check", methods=["POST"])
 def api_check():
     data = request.get_json()
+
     if not data:
         return jsonify({"status": "error", "message": "No data"}), 400
 
@@ -128,18 +156,27 @@ def api_check():
     hwid = data.get("hwid")
 
     if not key or not hwid:
-        return jsonify({"status": "error", "message": "Missing key or hwid"}), 400
+        return jsonify(
+            {"status": "error", "message": "Missing key or hwid"}
+        ), 400
 
     db = get_db()
-    row = db.execute("SELECT * FROM keys WHERE key = ?", (key,)).fetchone()
+    row = db.execute(
+        "SELECT * FROM keys WHERE key = ?",
+        (key,)
+    ).fetchone()
 
     if not row:
         add_log("API", f"Invalid key attempt: {key}", get_ip())
         return jsonify({"status": "invalid"})
 
     if row["hwid"] is None:
-        db.execute("UPDATE keys SET hwid = ? WHERE id = ?", (hwid, row["id"]))
+        db.execute(
+            "UPDATE keys SET hwid = ? WHERE id = ?",
+            (hwid, row["id"])
+        )
         db.commit()
+
         add_log("API", f"Key bound: {key} → {hwid}", get_ip())
         return jsonify({"status": "bound"})
 
@@ -158,7 +195,10 @@ def users_page():
         return "Forbidden", 403
 
     db = get_db()
-    users = db.execute("SELECT * FROM users ORDER BY id DESC").fetchall()
+    users = db.execute(
+        "SELECT * FROM users ORDER BY id DESC"
+    ).fetchall()
+
     return render_template("users.html", users=users)
 
 
@@ -175,12 +215,14 @@ def create_user():
         return redirect("/users")
 
     db = get_db()
+
     try:
         db.execute(
             "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
             (username, password, role)
         )
         db.commit()
+
         add_log(session["user"], f"Created user: {username}", get_ip())
     except:
         pass
@@ -194,7 +236,10 @@ def delete_user(user_id):
         return "Forbidden", 403
 
     db = get_db()
-    user = db.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = db.execute(
+        "SELECT username FROM users WHERE id = ?",
+        (user_id,)
+    ).fetchone()
 
     if user:
         add_log(session["user"], f"Deleted user: {user['username']}", get_ip())
@@ -211,16 +256,27 @@ def toggle_role(user_id):
         return "Forbidden", 403
 
     db = get_db()
-    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = db.execute(
+        "SELECT * FROM users WHERE id = ?",
+        (user_id,)
+    ).fetchone()
 
     if not user:
         return redirect("/users")
 
     new_role = "admin" if user["role"] == "viewer" else "viewer"
-    db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, user_id))
+
+    db.execute(
+        "UPDATE users SET role = ? WHERE id = ?",
+        (new_role, user_id)
+    )
     db.commit()
 
-    add_log(session["user"], f"Changed role for {user['username']} → {new_role}", get_ip())
+    add_log(
+        session["user"],
+        f"Changed role for {user['username']} → {new_role}",
+        get_ip()
+    )
 
     return redirect("/users")
 
@@ -232,5 +288,8 @@ def logs_page():
         return "Forbidden", 403
 
     db = get_db()
-    logs = db.execute("SELECT * FROM logs ORDER BY id DESC").fetchall()
+    logs = db.execute(
+        "SELECT * FROM logs ORDER BY id DESC"
+    ).fetchall()
+
     return render_template("logs.html", logs=logs)
