@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Rematch Egypt Control Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 * { box-sizing: border-box; }
 
@@ -11,152 +12,155 @@ body {
     margin: 0;
     height: 100vh;
     font-family: Segoe UI, sans-serif;
-    background: radial-gradient(circle at top, #050914, #02040c);
+    background: radial-gradient(circle at top, #05080f, #000);
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-#particles {
+/* ===== Animated Stars Background ===== */
+canvas {
     position: fixed;
     inset: 0;
     z-index: 0;
 }
 
-#splash {
-    position: fixed;
-    inset: 0;
-    background: #02040c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    animation: splashFade 2s forwards;
-}
-#splash img {
-    width: 100px;
-    opacity: .9;
-}
-@keyframes splashFade {
-    0% {opacity:1;}
-    70% {opacity:1;}
-    100% {opacity:0; pointer-events:none;}
-}
-
+/* ===== Login Card ===== */
 .box {
     position: relative;
     z-index: 2;
     width: 360px;
-    padding: 35px;
-    background: rgba(2,6,23,0.88);
-    border: 1px solid #111827;
-    border-radius: 24px;
-    backdrop-filter: blur(14px);
+    padding: 38px;
+    background: rgba(8, 12, 22, 0.78);
+    border: 1px solid rgba(255,255,255,.05);
+    border-radius: 26px;
+    backdrop-filter: blur(18px);
     text-align: center;
     color: white;
-    animation: fadeUp .6s ease;
-    box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    box-shadow: 0 0 0 rgba(80,120,255,.0);
+    transition: box-shadow .3s ease;
 }
 
-@keyframes fadeUp {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
+/* Mouse reactive glow */
+.box::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(80,120,255,.25), transparent 60%);
+    border-radius: 28px;
+    z-index: -1;
 }
 
-.logo-img {
-    width: 90px;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 0 12px rgba(59,130,246,.25));
-}
-
-h2 {
-    font-weight: 600;
-    letter-spacing: .3px;
-}
-
-.input-group {
+/* ===== Logo ===== */
+.logo {
     position: relative;
+    margin-bottom: 10px;
+    animation: logoIntro 1.2s ease;
+}
+
+.logo img {
+    width: 80px;
+    filter: drop-shadow(0 0 12px rgba(120,150,255,.35));
+}
+
+/* Reflection */
+.logo::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 80px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: url("/static/img/logo.png") center/contain no-repeat;
+    opacity: .08;
+    filter: blur(2px);
+    transform: translateX(-50%) scaleY(-1);
+}
+
+@keyframes logoIntro {
+    from {opacity:0; transform:scale(.8) translateY(-20px); filter:blur(8px);}
+    to {opacity:1; transform:scale(1) translateY(0); filter:blur(0);}
+}
+
+/* ===== Inputs ===== */
+.input-group {
     margin: 15px 0;
+    position: relative;
 }
 
 input {
     width: 100%;
-    padding: 14px 45px 14px 15px;
-    border-radius: 14px;
-    border: none;
-    background: #050b1a;
+    padding: 14px 44px 14px 16px;
+    border-radius: 16px;
+    background: #05080f;
+    border: 1px solid #111827;
     color: white;
     outline: none;
-    border: 1px solid #0f172a;
 }
 
 input:focus {
-    border-color: #1d4ed8;
+    border-color: #3b82f6;
 }
 
+/* Show/Hide */
 .toggle-pass {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    cursor: pointer;
+    font-size: 13px;
     opacity: .6;
-    font-size: 14px;
+    cursor: pointer;
 }
 
-.toggle-pass:hover {
-    opacity: 1;
-}
+.toggle-pass:hover { opacity: 1; }
 
+/* ===== Button ===== */
 button {
     width: 100%;
     padding: 14px;
-    border-radius: 16px;
+    border-radius: 18px;
     border: none;
-    background: linear-gradient(90deg, #1e40af, #1e3a8a);
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
     color: white;
     font-weight: bold;
     cursor: pointer;
-    transition: .2s ease;
+    transition: .25s ease;
 }
 
 button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(30,64,175,.35);
+    box-shadow: 0 10px 35px rgba(37,99,235,.35);
 }
 
-.shake {
-    animation: shake .4s;
-}
-
+/* ===== Shake ===== */
+.shake { animation: shake .4s; }
 @keyframes shake {
-    0% {transform:translateX(0);}
-    25% {transform:translateX(-6px);}
-    50% {transform:translateX(6px);}
-    75% {transform:translateX(-6px);}
-    100% {transform:translateX(0);}
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    50%{transform:translateX(6px)}
+    75%{transform:translateX(-6px)}
 }
 
+/* ===== Mobile ===== */
 @media(max-width:500px){
-    .box {
-        width: 90%;
-        border-radius: 18px;
-    }
+    .box { width: 92%; padding: 30px; }
 }
 </style>
 </head>
+
 <body>
 
-<div id="splash">
-    <img src="/static/img/logo.png">
-</div>
-
-<canvas id="particles"></canvas>
+<canvas id="stars"></canvas>
 
 <form class="box" method="post">
-    <img src="/static/img/logo.png" class="logo-img">
-    <h2>Rematch Egypt Control Panel</h2>
+    <div class="logo">
+        <img src="/static/img/logo.png">
+    </div>
+
+    <h2 style="margin-bottom:25px;font-weight:600;">Rematch Egypt Control Panel</h2>
 
     <div class="input-group">
         <input name="username" placeholder="Username" required>
@@ -171,49 +175,50 @@ button:hover {
 </form>
 
 <script>
+// Show / Hide
 function togglePass(){
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+    const i = document.getElementById("password");
+    i.type = i.type === "password" ? "text" : "password";
 }
 
-if(window.location.search.includes("error")){
+// Shake demo
+if(location.search.includes("error")){
     document.querySelector(".box").classList.add("shake");
 }
 
-const canvas = document.getElementById("particles");
+// Mouse reactive glow
+const card = document.querySelector(".box");
+document.addEventListener("mousemove", e=>{
+    const r = card.getBoundingClientRect();
+    card.style.setProperty("--x", `${e.clientX - r.left}px`);
+    card.style.setProperty("--y", `${e.clientY - r.top}px`);
+});
+
+// Stars Parallax
+const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
-let w, h;
+let w,h;
+function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight}
+resize(); addEventListener("resize",resize);
 
-function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resize);
-resize();
-
-let particles = Array.from({length: 70}, () => ({
-    x: Math.random()*w,
-    y: Math.random()*h,
-    r: Math.random()*1.8+0.5,
-    dx: (Math.random()-.5)*0.3,
-    dy: (Math.random()-.5)*0.3
+const stars = Array.from({length:120},()=>({
+    x:Math.random()*w,
+    y:Math.random()*h,
+    z:Math.random()*1.5+0.2
 }));
 
-function animate(){
+function draw(){
     ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>{
-        p.x+=p.dx;
-        p.y+=p.dy;
-        if(p.x<0||p.x>w) p.dx*=-1;
-        if(p.y<0||p.y>h) p.dy*=-1;
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle="rgba(37,99,235,.25)";
-        ctx.fill();
+    stars.forEach(s=>{
+        s.y += s.z*0.3;
+        if(s.y>h){s.y=0;s.x=Math.random()*w;}
+        ctx.fillStyle = "rgba(120,150,255,.6)";
+        ctx.fillRect(s.x,s.y,s.z,s.z);
     });
-    requestAnimationFrame(animate);
+    requestAnimationFrame(draw);
 }
-animate();
+draw();
 </script>
+
 </body>
 </html>
