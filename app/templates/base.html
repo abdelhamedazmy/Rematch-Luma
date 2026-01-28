@@ -7,6 +7,7 @@
 <title>{{ title or "Control Panel" }}</title>
 
 <style>
+/* ===== Reset ===== */
 body {
     margin: 0;
     font-family: Segoe UI, sans-serif;
@@ -22,6 +23,7 @@ body {
     height: 100vh;
     padding: 20px;
     box-sizing: border-box;
+    transition: 0.3s ease;
 }
 
 .sidebar h2 {
@@ -45,7 +47,6 @@ body {
     padding-left: 18px;
 }
 
-/* ===== Active link ===== */
 .sidebar a.active {
     background: #1e293b;
     color: #38bdf8;
@@ -65,13 +66,45 @@ body {
     padding: 25px;
     border-radius: 18px;
     margin-bottom: 20px;
+    border: 1px solid #1e293b;
     transition: all 0.2s ease;
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
 }
+
+/* ===== Dashboard Cards Pro ===== */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 20px;
+    border-radius: 20px;
+    background: #020617;
+    border: 1px solid #1e293b;
+    transition: 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+
+.stat-card .icon {
+    font-size: 32px;
+}
+
+.stat-card.blue { border-left: 4px solid #3b82f6; }
+.stat-card.purple { border-left: 4px solid #a855f7; }
+.stat-card.green { border-left: 4px solid #22c55e; }
 
 /* ===== Buttons ===== */
 .button {
@@ -87,47 +120,124 @@ body {
 
 .button:hover {
     background: #1d4ed8;
-    transform: scale(1.03);
+    animation: pulse 0.4s ease;
 }
 
-/* ===== Tables ===== */
-table tr {
-    transition: background 0.2s ease;
+/* ===== Tables Pro ===== */
+.pro-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #020617;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-table tr:hover {
+.pro-table th {
+    position: sticky;
+    top: 0;
+    background: #020617;
+    padding: 14px;
+    text-align: left;
+    color: #38bdf8;
+}
+
+.pro-table td {
+    padding: 14px;
+    border-top: 1px solid #1e293b;
+}
+
+.pro-table tr:nth-child(even) {
+    background: #020617;
+}
+
+.pro-table tr:hover {
     background: #1e293b;
 }
+
+/* ===== Badges ===== */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.red { background: #dc2626; }
+.blue { background: #2563eb; }
+.green { background: #16a34a; }
+.yellow { background: #ca8a04; }
 
 /* ===== Animations ===== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* ===== Responsive + Hamburger ===== */
+.menu-btn {
+    display: none;
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        height: auto;
+        width: 100%;
+        display: none;
+    }
+
+    .sidebar.show {
+        display: block;
+    }
+
+    .menu-btn {
+        display: inline-block;
+    }
+
+    .content {
+        padding: 20px;
+    }
+}
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <h2>🎮 Rematch</h2>
 
     <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">🏠 Dashboard</a>
-
     <a href="/keys" class="{% if request.path.startswith('/keys') %}active{% endif %}">🔑 Keys</a>
-
     <a href="/users" class="{% if request.path.startswith('/users') %}active{% endif %}">👥 Users</a>
-
     <a href="/logs" class="{% if request.path.startswith('/logs') %}active{% endif %}">📜 Logs</a>
 
     <hr style="border-color:#1f2937">
-
     <a href="/logout">🚪 Logout</a>
 </div>
 
 <div class="content">
+    <div class="menu-btn" onclick="toggleMenu()">☰ Menu</div>
     {% block content %}{% endblock %}
 </div>
+
+<script>
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("show");
+}
+</script>
 
 </body>
 </html>
