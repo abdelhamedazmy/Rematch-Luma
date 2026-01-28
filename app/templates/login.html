@@ -11,41 +11,67 @@ body {
     align-items:center;
     font-family:Segoe UI;
 }
+
+/* صندوق اللوجين */
 .box {
     background: rgba(0,0,0,.8);
-    padding:40px;
+    padding:32px;              /* كان 40 */
     border-radius:20px;
-    width:360px;
+    width:320px;               /* كان 360 */
     color:white;
     text-align:center;
     animation: fade .6s ease;
 }
+
+/* أنيميشن الدخول */
 @keyframes fade {
     from {opacity:0; transform:translateY(30px)}
     to {opacity:1; transform:translateY(0)}
 }
-input,button {
+
+/* الحقول والزر */
+input, button {
     width:100%;
-    padding:12px;
-    margin:10px 0;
-    border-radius:10px;
+    height:44px;               /* يوحّد الارتفاع */
+    padding:8px 14px;          /* أصغر وأنعم */
+    margin:8px 0;              /* مسافة أهدى */
+    border-radius:12px;
     border:none;
+    font-size:14.5px;
+    box-sizing:border-box;
 }
+
+/* الحقول */
+input {
+    background:#f1f5f9;
+    outline:none;
+}
+
+/* زر الدخول */
 button {
     background:#2563eb;
     color:white;
     font-weight:bold;
+    cursor:pointer;
+    transition:.2s ease;
+}
+
+button:hover {
+    background:#1d4ed8;
+    transform:translateY(-1px);
 }
 </style>
 </head>
 <body>
 
 <form class="box" method="post">
-    <img src="/static/img/logo.png" width="90"><br><br>
-    <h2>Rematch Egypt Control Panel</h2>
+    <img src="/static/img/logo.png" width="80"><br><br>
 
-    <input name="username" placeholder="Username">
-    <input name="password" type="password" placeholder="Password">
+    <h2 style="margin-bottom:18px;">Rematch Egypt Control Panel</h2>
+
+    <input name="username" placeholder="Username" required>
+    <input name="password" type="password" placeholder="Password" required>
+
     <button>Login</button>
 </form>
 
