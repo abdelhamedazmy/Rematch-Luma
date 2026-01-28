@@ -19,190 +19,189 @@ body {
     align-items: center;
 }
 
-/* ===== Animated Wave Background ===== */
-#waves {
+/* ===== Animated Stars (Parallax) ===== */
+canvas {
     position: fixed;
     inset: 0;
     z-index: 0;
-    background: linear-gradient(120deg, #020617, #0f172a);
-    overflow: hidden;
-}
-.wave {
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, #2563eb22 0%, transparent 60%);
-    animation: waveMove 20s linear infinite;
-}
-.wave:nth-child(2) { animation-duration: 30s; opacity: .4; }
-.wave:nth-child(3) { animation-duration: 40s; opacity: .2; }
-
-@keyframes waveMove {
-    from { transform: translate(-20%, -20%) rotate(0deg); }
-    to   { transform: translate(-20%, -20%) rotate(360deg); }
 }
 
 /* ===== Login Box ===== */
 .box {
     position: relative;
-    z-index: 5;
+    z-index: 2;
     width: 360px;
     padding: 35px;
-    background: rgba(2,6,23,0.85);
-    border: 1px solid #1e293b;
+    background: rgba(2,6,23,0.75);
     border-radius: 24px;
-    backdrop-filter: blur(14px);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.05);
     text-align: center;
     color: white;
-    animation: cinematicEnter 1s ease;
-    transition: transform .2s ease;
-}
-.box:hover {
-    transform: translateY(-2px);
+    animation: enter 1s ease;
+    transition: .4s ease;
 }
 
-@keyframes cinematicEnter {
-    0% { opacity:0; transform: scale(.9) translateY(50px); filter: blur(10px);}
-    100% { opacity:1; transform: scale(1) translateY(0); filter: blur(0);}
+/* Neon Border */
+.box::before {
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius:26px;
+    background: linear-gradient(120deg,#2563eb,#7c3aed,#22c55e);
+    filter: blur(12px);
+    opacity:.6;
+    z-index:-1;
+    animation: neon 6s linear infinite;
+}
+
+@keyframes neon {
+    0%{filter:hue-rotate(0deg);}
+    100%{filter:hue-rotate(360deg);}
+}
+
+/* Entrance animation */
+@keyframes enter {
+    from {opacity:0; transform:scale(.9) translateY(40px);}
+    to {opacity:1; transform:scale(1) translateY(0);}
 }
 
 /* ===== Logo ===== */
-.logo-wrap {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 10px;
-    animation: logoDrop 1.2s ease;
-}
-@keyframes logoDrop {
-    from { transform: translateY(-40px) scale(.8); opacity: 0;}
-    to { transform: translateY(0) scale(1); opacity: 1;}
+.logo {
+    font-size: 46px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg,#38bdf8,#a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px #2563ebaa);
+    animation: logoEnter 1.2s ease;
 }
 
-.logo-wrap img {
-    width: 110px;
-    filter: drop-shadow(0 0 15px #2563ebaa);
+@keyframes logoEnter {
+    from {opacity:0; transform:translateY(-30px) scale(.8);}
+    to {opacity:1; transform:none;}
 }
 
 /* Reflection */
-.logo-wrap::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url("/static/img/logo.png") center/contain no-repeat;
-    transform: scaleY(-1);
-    opacity: .15;
+.logo::after {
+    content:"R/M";
+    display:block;
+    transform:scaleY(-1);
+    opacity:.1;
     filter: blur(2px);
 }
 
 /* ===== Inputs ===== */
-.input-group { margin: 15px 0; position: relative; }
+.input-group { margin:15px 0; }
 
 input {
     width: 100%;
-    padding: 14px 45px 14px 15px;
+    padding: 14px;
     border-radius: 14px;
+    border: none;
     background: #0f172a;
     color: white;
     border: 1px solid #1e293b;
-    outline: none;
+    transition:.2s ease;
 }
-input:focus { border-color: #2563eb; }
 
-.toggle-pass {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    opacity: .6;
-    font-size: 14px;
+input:focus {
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px #2563eb22;
 }
-.toggle-pass:hover { opacity: 1; }
 
 /* ===== Button ===== */
 button {
-    width: 100%;
-    padding: 14px;
-    border-radius: 16px;
-    border: none;
-    background: linear-gradient(90deg, #2563eb, #4f46e5);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: .2s ease;
-}
-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 30px #2563eb55;
+    width:100%;
+    padding:14px;
+    border-radius:16px;
+    border:none;
+    background: linear-gradient(90deg,#2563eb,#7c3aed);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s ease;
 }
 
-/* Shake */
-.shake { animation: shake .4s; }
-@keyframes shake {
-    0% {transform:translateX(0);}
-    25% {transform:translateX(-6px);}
-    50% {transform:translateX(6px);}
-    75% {transform:translateX(-6px);}
-    100% {transform:translateX(0);}
+button:hover {
+    transform: translateY(-2px);
+    box-shadow:0 10px 30px #2563eb66;
+}
+
+/* Blur transition on click */
+body.loading .box {
+    filter: blur(10px);
+    transform: scale(.95);
+    opacity:.3;
 }
 
 /* Mobile */
 @media(max-width:500px){
-    .box { width: 90%; }
+    .box { width:90%; }
 }
 </style>
 </head>
+
 <body>
 
-<!-- Animated Background -->
-<div id="waves">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-</div>
+<canvas id="stars"></canvas>
 
-<!-- Login -->
-<form class="box" method="post">
-    <div class="logo-wrap">
-        <img src="/static/img/logo.png">
-    </div>
-
+<form class="box" method="post" onsubmit="loginEffect()">
+    <div class="logo">R/M</div>
     <h2>Rematch Egypt Control Panel</h2>
 
     <div class="input-group">
         <input name="username" placeholder="Username" required>
     </div>
-
     <div class="input-group">
-        <input id="password" name="password" type="password" placeholder="Password" required>
-        <span class="toggle-pass" onclick="togglePass()">Show</span>
+        <input type="password" name="password" placeholder="Password" required>
     </div>
 
     <button>Login</button>
 </form>
 
+<audio id="sound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+
 <script>
-// Show/Hide
-function togglePass(){
-    const i = document.getElementById("password");
-    i.type = i.type === "password" ? "text" : "password";
-}
+// ===== Stars Parallax =====
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+let w,h;
+function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
+window.addEventListener("resize",resize); resize();
 
-// Fake error shake
-if(location.search.includes("error")){
-    document.querySelector(".box").classList.add("shake");
-}
+const stars = Array.from({length:150},()=>({
+  x:Math.random()*w,
+  y:Math.random()*h,
+  z:Math.random()*2+1
+}));
 
-// Mouse interaction (Gaming feel)
-document.addEventListener("mousemove", e => {
-    const box = document.querySelector(".box");
-    const x = (window.innerWidth/2 - e.clientX) / 60;
-    const y = (window.innerHeight/2 - e.clientY) / 60;
-    box.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  stars.forEach(s=>{
+    s.y+=s.z*0.2;
+    if(s.y>h) s.y=0;
+    ctx.fillStyle="#ffffff55";
+    ctx.fillRect(s.x,s.y,s.z,s.z);
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ===== Mouse depth effect =====
+document.addEventListener("mousemove", e=>{
+  const x=(e.clientX/w-0.5)*10;
+  const y=(e.clientY/h-0.5)*10;
+  document.querySelector(".box").style.transform=`translate(${x}px,${y}px)`;
 });
+
+// ===== Login cinematic =====
+function loginEffect(){
+  document.body.classList.add("loading");
+  document.getElementById("sound").play();
+}
 </script>
+
 </body>
 </html>
