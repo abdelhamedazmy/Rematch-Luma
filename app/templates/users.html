@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>👥 Users Management</h1>
+
+<h1>Users Management</h1>
 
 <div class="card">
-<form method="post" action="/users/create">
+<form method="post" action="/users/create" style="display:flex;gap:10px;flex-wrap:wrap;">
     <input name="username" placeholder="Username" required>
     <input name="password" placeholder="Password" required>
     <select name="role">
@@ -16,24 +16,34 @@
 </div>
 
 <div class="card">
-<table style="width:100%">
-<tr style="color:#38bdf8;">
+<table class="pro-table">
+<tr>
     <th>ID</th>
     <th>Username</th>
     <th>Role</th>
     <th>Actions</th>
 </tr>
+
 {% for u in users %}
 <tr>
     <td>{{ u.id }}</td>
     <td>{{ u.username }}</td>
-    <td>{{ u.role }}</td>
+
     <td>
-        <a href="/users/toggle_role/{{ u.id }}" class="button">Toggle Role</a>
+        {% if u.role == "admin" %}
+            <span class="badge red">Admin</span>
+        {% else %}
+            <span class="badge blue">Viewer</span>
+        {% endif %}
+    </td>
+
+    <td>
+        <a href="/users/toggle_role/{{ u.id }}" class="button">Toggle</a>
         <a href="/users/delete/{{ u.id }}" class="button">Delete</a>
     </td>
 </tr>
 {% endfor %}
 </table>
 </div>
+
 {% endblock %}
